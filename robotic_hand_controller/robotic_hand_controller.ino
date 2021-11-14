@@ -10,8 +10,8 @@
 #define MIN_4 10000 //4:ANULARE
 #define MAX_5 60000
 #define MIN_5 10000 //5:MIGNOLO
-#define _SMOOTHING 100
-#define _RESOLUTION 280
+#define _SMOOTHING 70
+#define _RESOLUTION 300
 // DEFINIZIONE PIN SERVO
 #define pin1 11
 #define pin2 10
@@ -22,11 +22,11 @@
 #define _START_DELAY 10
 
 String comando = "";
-long int t = 0;
+long unsigned int t[NUM_FINGERS_];
 String dato ="";
 int firstStart =1;
 int index = 0;
-
+int isMoving = 0;
 //VARIABILI MANO:
 const long int home_angles[] = {MIN_1,MIN_2,MIN_3,MIN_4,MIN_5};
 long int angles[NUM_FINGERS_];
@@ -35,9 +35,6 @@ int iterations[NUM_FINGERS_];
 
 //ServoFinger(int _pin, int _minAngle, int _maxAngle, unsigned int _delayMillis,int _resolution, int _smoothing);
 ServoFinger sf[NUM_FINGERS_];
-ServoHand hand(NUM_FINGERS_);
-
-//ServoHand(ServoFinger _sf[],int n);
 void setup() {
   Serial.begin(9600);
    for(int i = 0; i<NUM_FINGERS_;i++) {
@@ -48,17 +45,15 @@ sf[1].setAll(pin2,MIN_2,MAX_2,_START_DELAY,_RESOLUTION,_SMOOTHING);
 sf[2].setAll(pin3,MIN_3,MAX_3,_START_DELAY,_RESOLUTION,_SMOOTHING);
 sf[3].setAll(pin4,MIN_4,MAX_4,_START_DELAY,_RESOLUTION,_SMOOTHING);
 sf[4].setAll(pin5,MIN_5,MAX_5,_START_DELAY,_RESOLUTION,_SMOOTHING);
-//hand.setAll(sf); //QUI HO UN PROBELEMA: Il print sotto printa la risoluzione invece del delay
-//hand.prova();
 
-//homing();
+
 Serial.println("INIZIALIZZO LA MANO --> HOMING");
-Serial.println(sf[0].getDelay());
+homing();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if(hand.getIsMoving() == 0) {
+  if(isMoving == 0) {
     index = 0;
     comando = Serial.readString();
     if(comando.startsWith("a")) {
@@ -77,20 +72,18 @@ void loop() {
         Serial.println(angles[i]);
       }
     setAngles(angles); 
-    simulate();
+    isMoving = 1;
     
-//    servo1.setAngle(angolo*1000);
-//    Serial.print("Il numero di iterazioni atteso è: ");
-//    Serial.println(servo1.getTotalIterations(angolo,servo1.getPreviousAngle()));
-//    servo1.setIsMoving(1);
-//    t = millis();
+    for(int i = 0; i < NUM_FINGERS_; i++) {
+    t[i] = millis();
+  }
   }
   }
   
-//  if(hand.getIsMoving() == 1) {
-//    if (hand.runToPosition(&t) == 0)
-//     Serial.println("Movimento finito");
-//  }
+  if(isMoving == 1) {
+    if (runToPosition() == 0)
+     Serial.println("Movimento finito");
+  }
   
   
 
@@ -100,21 +93,10 @@ void homing() {
 writeFingers(home_angles);
 }
 
-
-String* split(String s, String sep) {
-  String result[5];
-  String dato = "";
-  int index = 0;
-  for(int i = 0; i< s.length();i++) {
-    if(s.substring(i,i+1) != sep) {
-      dato += s.substring(i,i+1);
-    } else {
-      result[index] = dato;
-      index++;
-    }
-}
-result[index] = dato;
-return result;
+void attachHand() {
+  for(int i = 0; i < NUM_FINGERS_; i++) {
+    sf[i].attachServo();
+  }
 }
 
 void setAngles(long int _angles[]) {
@@ -141,6 +123,24 @@ void setAngles(long int _angles[]) {
   }
 }
 
+int runToPosition() {
+  int a = 0;
+  for(int i = 0; i < NUM_FINGERS_; i++) {
+    if(sf[i].getIsMoving() == 1) {
+        if (sf[i].run(&t[i]) == 1) {
+          a++; 
+          //Serial.println(a);
+        }
+       }
+  }
+  if(a == 0) {
+    isMoving = 0;
+  } else {
+    isMoving = 1;
+  }
+  return isMoving;
+  
+}
 void writeFingers(long int _angles[]) {
   setAngles(_angles);
   for(int i = 0; i < NUM_FINGERS_; i++) {
@@ -152,19 +152,6 @@ int getMax(int a[]){
   int _max = 0;
   for(int i = 0; i < NUM_FINGERS_; i++) {
     _max = max(a[i],_max);
-    Serial.println("Looking for max value: " + String(_max)); 
 }
 return _max;
-}
-
-void simulate() { //Ritorna la somma dei delay totali di tutte le dita, la somma dovrebbe essere uguale.
-  for(int i = 0; i < NUM_FINGERS_;i++) {
-    int total_delay = 0;
-    for(int j = 0; j < iterations[i]; j++) {
-      total_delay += sf[i].getDelay();
-    }
-      Serial.print("Finger " + String(i) +": ");
-      Serial.println(total_delay);
-  }
-
 }

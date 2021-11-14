@@ -56,7 +56,7 @@
 		if (_angle>= minAngle && _angle <= maxAngle) {
 		previousAngle = angle;
 		angle = _angle;
-    	isMoving = 1;
+    isMoving = 1;
     }
 	}
 
@@ -98,9 +98,10 @@
 	void ServoFinger::writeAngle(long int _angle) {
 	if (_angle>= minAngle && _angle <= maxAngle) {
 		if(abs(angle - _angle) >= resolution) {
-        previousAngle = angle;
-        angle = _angle;
+        previousAngle = _angle;
       	servo.write(_angle/1000);
+    	} else {
+        previousAngle = angle;
     	}
 	}
 	}
@@ -111,9 +112,10 @@
 			return angle;
 		}
 	}
-	int ServoFinger::run(long int *t) {
+	int ServoFinger::run(long int *t) { 
 		if(millis() - *t > delayMillis) {
     		long int next = getNext();
+        //Serial.println(previousAngle);
     		if(next == angle) {
     		    isMoving = 0;
   			} else {
