@@ -1,0 +1,72 @@
+#include "ServoFinger.h"
+
+#define MAX_1 157000 //Definire gli angoli minimi per ogni dito. 
+#define MIN_1 62000 //1: POLLICE
+#define MAX_2 60
+#define MIN_2 10 //2: INDICE
+#define MAX_3 60
+#define MIN_3 10 //3:MEDIO
+#define MAX_4 60 
+#define MIN_4 10 //4:ANULARE
+#define MAX_5 60
+#define MIN_5 10 //5:MIGNOLO
+#define _SMOOTHING 50
+#define _RESOLUTION 300
+// DEFINIZIONE PIN SERVO
+#define pin1 11
+#define pin2 10
+#define pin3 9
+#define pin4 6
+#define pin5 5
+//DEFINIZIONE VELOCITA' SERVO
+#define _T_MIN 50
+#define _START_DELAY 10
+
+String comando = "";
+long int t = 0;
+long int angolo =0;
+//ServoFinger(int _pin, int _minAngle, int _maxAngle, unsigned int _delayMillis,int _resolution, int _smoothing);     
+ServoFinger servo1(pin1,MIN_1,MAX_1,_START_DELAY,_RESOLUTION,_SMOOTHING);
+ServoFinger servo2(pin2,MIN_2,MAX_2,_START_DELAY,_RESOLUTION,_SMOOTHING);
+ServoFinger servo3(pin3,MIN_3,MAX_3,_START_DELAY,_RESOLUTION,_SMOOTHING);
+ServoFinger servo4(pin4,MIN_4,MAX_4,_START_DELAY,_RESOLUTION,_SMOOTHING);
+ServoFinger servo5(pin5,MIN_5,MAX_5,_START_DELAY,_RESOLUTION,_SMOOTHING);
+
+void setup() {
+  Serial.begin(9600);
+  servo1.attachServo();
+  servo1.writeAngle(MAX_1);
+  delay(500);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(servo1.getIsMoving() == 0) {
+    comando = Serial.readString();
+    if(comando.startsWith("a")) {
+    comando.remove(0,1);
+    angolo = comando.toInt();
+    Serial.println(angolo);
+    servo1.setAngle(angolo*1000);
+    Serial.print("Il numero di iterazioni atteso è: ");
+    Serial.println(servo1.getTotalIterations(angolo,servo1.getPreviousAngle()));
+    servo1.setIsMoving(1);
+  }
+  }
+  
+  if(millis() - t > servo1.getDelay()) {
+    //Serial.println(servo1.getNext());
+    long int next = servo1.getNext();
+    if(next == servo1.getAngle()) {
+       Serial.println("Posizione raggiunta");
+       servo1.setIsMoving(0);
+    } else {
+       servo1.writeAngle(next);
+       //Serial.println(next);
+    }
+   t = millis();
+    
+  }
+  
+
+}
