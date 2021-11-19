@@ -1,4 +1,6 @@
 #include "ServoHand.h"
+#include <Wire.h>
+
 //a70,110,130,137,120,
 //a157,20,3,46,32,
 #define NUM_FINGERS_ 5
@@ -39,6 +41,8 @@ int iterations[NUM_FINGERS_];
 ServoFinger sf[NUM_FINGERS_];
 void setup() {
   Serial.begin(9600);
+  Wire.begin(22);
+Wire.onReceive(receiveData);
    for(int i = 0; i<NUM_FINGERS_;i++) {
   sf[i] = ServoFinger();
 }
@@ -159,4 +163,19 @@ int getMax(int a[]){
     _max = max(a[i],_max);
 }
 return _max;
+}
+
+//------funzioni per i2c ------
+byte data_to_echo = 0;
+
+
+
+void receiveData(int bytecount)
+{
+for (int i = 0; i < bytecount; i++) {
+//round e 1000
+angles[i]= Wire.read();
+angles[i]*=1000;
+Serial.println(angles[i]);
+}
 }
