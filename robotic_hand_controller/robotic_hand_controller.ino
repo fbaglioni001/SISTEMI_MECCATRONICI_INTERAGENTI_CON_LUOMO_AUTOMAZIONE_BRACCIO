@@ -1,15 +1,17 @@
 #include "ServoHand.h"
+//a70,110,130,137,120,
+//a157,20,3,46,32,
 #define NUM_FINGERS_ 5
 #define MAX_1 157000 //Definire gli angoli minimi per ogni dito. 
 #define MIN_1 62000 //1: POLLICE
-#define MAX_2 60000
-#define MIN_2 10000 //2: INDICE
-#define MAX_3 60000
-#define MIN_3 10000 //3:MEDIO
-#define MAX_4 60000 
-#define MIN_4 10000 //4:ANULARE
-#define MAX_5 60000
-#define MIN_5 10000 //5:MIGNOLO
+#define MAX_2 125000
+#define MIN_2 17000 //2: INDICE
+#define MAX_3 134000
+#define MIN_3 1000 //3:MEDIO
+#define MAX_4 154000 
+#define MIN_4 38000 //4:ANULARE
+#define MAX_5 130000
+#define MIN_5 30000 //5:MIGNOLO
 #define _SMOOTHING 70
 #define _RESOLUTION 300
 // DEFINIZIONE PIN SERVO
@@ -48,6 +50,9 @@ sf[4].setAll(pin5,MIN_5,MAX_5,_START_DELAY,_RESOLUTION,_SMOOTHING);
 
 
 Serial.println("INIZIALIZZO LA MANO --> HOMING");
+for(int i = 0; i < NUM_FINGERS_; i++) {
+  sf[i].attachServo();
+}
 homing();
 }
 
