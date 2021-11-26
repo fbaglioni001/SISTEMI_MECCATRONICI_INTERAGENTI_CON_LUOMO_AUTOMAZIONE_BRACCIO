@@ -1,4 +1,4 @@
-/*********************************************************************************
+/*********************************************************************************************************
   BRACCIO ROBOTICO COMANDATO DA ROS
   PROGRAMMA CONTROLLO BRACCIO A 3 GRADI DI LIBERTA'
   mediante utilizzo tensy 4.1 e driver Tmc2208 V3.0
@@ -8,7 +8,7 @@
   A.A. 2021/22
 
   REPO: https://github.com/fbaglioni001/SISTEMI_MECCATRONICI_INTERAGENTI_CON_LUOMO_AUTOMAZIONE_BRACCIO.git
- ********************************************************************************/
+**********************************************************************************************************/
 
 #include <Wire.h>
 #include <Stepper.h>
@@ -45,6 +45,7 @@ long int steps[NUM_JOINTS_];
 void setup() {
   pinMode(en_comunication, OUTPUT);
   digitalWrite(en_comunication, HIGH);
+  noInterrupts();
 
   pinMode(en1, OUTPUT);
   pinMode(en2, OUTPUT);
@@ -54,10 +55,27 @@ void setup() {
   Wire.begin(32);
   Wire.onReceive(receiveData);
 
+  Interrupts();
   digitalWrite(en_comunication, LOW);
 }
 
 void loop() {
+
+  if (setup == 1) {
+    setAngles(angles);
+    digitalWrite(triggerPin, HIGH);
+    noInterrupts();
+
+    //code
+  }
+
+  if (isMoving == 1) {
+    if (runToPosition() == 0) {
+      
+      interrupts();
+      digitalWrite(triggerPin,LOW);
+    }
+  }
 }
 
 // function i2c-------------------------------------------------------------------
@@ -67,5 +85,6 @@ void receiveData(int bytecount)
   for (int i = 0; i < bytecount; i++) {
     steps[i] = Wire.read();
     Serial.println(steps[i]);
+    setup = 1;
   }
 }

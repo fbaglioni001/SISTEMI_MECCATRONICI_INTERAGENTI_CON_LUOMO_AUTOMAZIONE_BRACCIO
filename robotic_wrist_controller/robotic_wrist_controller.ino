@@ -1,4 +1,4 @@
-/*********************************************************************************
+/*********************************************************************************************************
   BRACCIO ROBOTICO COMANDATO DA ROS
   PROGRAMMA CONTROLLO POLSO A 2 GRADI DI LIBERTA'
   mediante utilizzo arduino micro
@@ -7,7 +7,7 @@
           Mirandola Edoardo (e.mirandola@studenti.unibs.it)
   A.A. 2021/22
   REPO: https://github.com/fbaglioni001/SISTEMI_MECCATRONICI_INTERAGENTI_CON_LUOMO_AUTOMAZIONE_BRACCIO.git
- ********************************************************************************/
+**********************************************************************************************************/
 
 #include <Wire.h>
 
@@ -31,15 +31,33 @@ long int angles[NUM_WRIST_];
 void setup() {
   pinMode(en_comunication, OUTPUT);
   digitalWrite(en_comunication, HIGH);
+  noInterrupts();
 
   Serial.begin(9600);
   Wire.begin(42);
   Wire.onReceive(receiveData);
 
+  Interrupts();
   digitalWrite(en_comunication, LOW);
 }
 
 void loop() {
+  if (setup == 1) {
+    setAngles(angles);
+    digitalWrite(triggerPin, HIGH);
+    noInterrupts();
+    
+    //code
+  }
+
+
+  if (isMoving == 1) {
+    if (runToPosition() == 0) {
+      
+      interrupts();
+      digitalWrite(triggerPin,LOW);
+    }
+  }
 }
 
 // function i2c-------------------------------------------------------------------
@@ -50,5 +68,6 @@ void receiveData(int bytecount)
     angles[i] = Wire.read();
     angles[i] *= 1000;
     Serial.println(angles[i]);
+    setup = 1;
   }
 }
