@@ -72,38 +72,146 @@ void setup() {
   Serial.begin(9600);
   Wire.begin(42);
   Wire.onReceive(receiveData);
+  for (int i = 0; i < NUM_WRIST_; i++) {
+      sf[i] = ServoFinger();
+    }
+    sf[0].setAll(pin1, MIN_1, MAX_1, _START_DELAY, _RESOLUTION, _SMOOTHING);
+    sf[1].setAll(pin2, MIN_2, MAX_2, _START_DELAY, _RESOLUTION, _SMOOTHING);
 
+    Serial.println("INIZIALIZZO LA MANO --> HOMING");
+    for (int i = 0; i < NUM_WRIST_; i++) {
+      sf[i].attachServo();
+    }
+    homing();
   Interrupts();
   digitalWrite(en_comunication, LOW);
 }
 
 void loop() {
   if (is_setup == 1) {
-    setAngles(angles);
+    t_offset = millis();
+    if(isRelative == 0) {
+      for (int i = 0; i < NUM_WRIST; i++)
+      {
+        angles[i] = home_angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]));
+      }
+    } else {
+      for (int i = 0; i < NUM_WRIST; i++)
+      {
+        angles[i] = angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]));
+      }
+    }
+
+    setAngles(angles,totalTime);
     digitalWrite(triggerPin, HIGH);
-    noInterrupts();
-    
-    //code
+    isMoving = 1;
+    is_setup = 0;
+    while(millis -t_offset < offsetTime) {
+
+    }
+    for (int i = 0; i < NUM_WRIST; i++) {
+      t[i] = millis();
+    }
   }
-
-
   if (isMoving == 1) {
     if (runToPosition() == 0) {
-      
-      interrupts();
+      Serial.println("Movimento finito");
       digitalWrite(triggerPin,LOW);
     }
   }
 }
 
-// function i2c-------------------------------------------------------------------
-void receiveData(int bytecount)
-{
-  digitalWrite(en_comunication, HIGH);
-  for (int i = 0; i < bytecount; i++) {
-    angles[i] = Wire.read();
-    angles[i] *= 1000;
-    Serial.println(angles[i]);
-    is_setup = 1;
+void homing() {
+  writeFingers(home_angles);
+}
+
+
+void attachHand() {
+  for (int i = 0; i < NUM_WRIST_; i++) {
+    sf[i].attachServo();
   }
+}
+
+void setAngles(long int _angles[], int totalTime) {
+  for (int i = 0; i < NUM_WRIST_; i++) {
+    Serial.println("Finger " + String(i) + "--------------");
+    sf[i].setAngle(_angles[i]);
+    Serial.println("Angle = " + String(_angles[i]));
+    deltaAngle[i] = abs(sf[i].getAngle() - sf[i].getPreviousAngle());
+    Serial.println("dAngle = " + String(deltaAngle[i]));
+    iterations[i] = sf[i].getTotalIterations(_angles[i], sf[i].getPreviousAngle());
+    Serial.println("Iter = " + String(iterations[i]));
+  }
+  int maxTime = getMax(iterations) * _START_DELAY;
+  if(totalTime > maxTime) {
+    maxTime = totalTime;
+  }
+  for (int i = 0; i < NUM_WRIST_; i++) {
+    int act_delay = 0;
+    if (iterations[i] != 0) {
+      Serial.println(String(maxTime) + "/" + String(iterations[i]));
+      act_delay = max(_START_DELAY, round((float) maxTime / iterations[i]));
+    } else {
+      act_delay = _START_DELAY;
+    }
+    sf[i].setDelay(act_delay);
+    Serial.println("Delay = " + String(act_delay));
+  }
+}
+
+int runToPosition() {
+  int a = 0;
+  for (int i = 0; i < NUM_WRIST_; i++) {
+    if (sf[i].getIsMoving() == 1) {
+      if (sf[i].run( & t[i]) == 1) {
+        a++;
+        //Serial.println(a);
+      }
+    }
+  }
+  if (a == 0) {
+    isMoving = 0;
+  } else {
+    isMoving = 1;
+  }
+  return isMoving;
+
+}
+void writeFingers(long int _angles[]) {
+  int defaultTime = 1000;
+  setAngles(_angles, defaultTime);
+  for (int i = 0; i < NUM_WRIST_; i++) {
+    sf[i].writeAngle(_angles[i]);
+  }
+}
+
+void writeFingers(long int _angles[],int moveTime) {
+  setAngles(_angles, moveTime);
+  for (int i = 0; i < NUM_WRIST_; i++) {
+    sf[i].writeAngle(_angles[i]);
+  }
+}
+
+int getMax(int a[]) {
+  int _max = 0;
+  for (int i = 0; i < NUM_WRIST_; i++) {
+    _max = max(a[i], _max);
+  }
+  return _max;
+}
+
+//------funzioni per i2c ------
+byte data_to_echo = 0;
+
+void receiveData(int bytecount) {
+  for (int i = 0; i < bytecount; i++) {
+    data[i] = Wire.read();   
+  }
+  isRelative = data[0];
+  totalTime =(((int16_t) data[1]) << 8 | data[2]);
+  offsetTime =(((int16_t) data[3]) << 8 | data[4]);
+  for (int i = 5; i < _DATA_BYTES; i++) {
+   percentAngles[i-5] = data[i];
+  }
+  is_setup = 1;
 }
