@@ -29,7 +29,7 @@
 String comando = "";
 long unsigned int t[NUM_FINGERS_];
 String dato = "";
-int setup = 0;
+int is_setup = 0;
 int index = 0;
 int isMoving = 0;
 
@@ -47,7 +47,7 @@ int iterations[NUM_FINGERS_];
 ServoFinger sf[NUM_FINGERS_];
 
 //----------- Variabili i2c -------------
-uint triggerPin = 13;
+unsigned int triggerPin = 13;
 
 void setup() {
   Serial.begin(9600);
@@ -72,7 +72,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if (setup == 1) {
+  if (is_setup == 1) {
     setAngles(angles);
     digitalWrite(triggerPin, HIGH);
     for (int i = 0; i < NUM_FINGERS_; i++) {
@@ -80,7 +80,7 @@ void loop() {
     }
     noInterrupts();
     isMoving = 1;
-    setup = 0;
+    is_setup = 0;
   }
   if (isMoving == 1) {
     if (runToPosition() == 0) {
@@ -167,6 +167,6 @@ void receiveData(int bytecount) {
     //round e 1000
     angles[i] = Wire.read();
     angles[i] *= 1000;
-    setup = 1;
+    is_setup = 1;
   }
 }
