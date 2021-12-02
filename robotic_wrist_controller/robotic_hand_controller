@@ -31,12 +31,12 @@ String comando = "";
 long unsigned int t[NUM_FINGERS_];
 long unsigned int t_offset = 0;
 String dato = "";
-int is_setup = 0;
+int setup = 0;
 int index = 0;
 int isMoving = 0;
 int isRelative = 0;
-unsigned int offsetTime = 0;
-unsigned int totalTime = 0;
+uint offsetTime = 0;
+uint totalTime = 0;
 //VARIABILI MANO:
 const long int home_angles[] = {
   MIN_1,
@@ -59,7 +59,7 @@ int iterations[NUM_FINGERS_];
 ServoFinger sf[NUM_FINGERS_];
 
 //----------- Variabili i2c -------------
-unsigned int triggerPin = 13;
+uint triggerPin = 13;
 int data[_DATA_BYTES];
 
 void setup() {
@@ -85,7 +85,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if (is_setup == 1) {
+  if (setup == 1) {
     t_offset = millis();
     if(isRelative == 0) {
       for (int i = 0; i < NUM_FINGERS_; i++)
@@ -99,10 +99,10 @@ void loop() {
       }
     }
 
-    setAngles(angles,totalTime);
+    setAngles(angles);
     digitalWrite(triggerPin, HIGH);
     isMoving = 1;
-    is_setup = 0;
+    setup = 0;
     while(millis -t_offset < offsetTime) {
 
     }
@@ -175,15 +175,7 @@ int runToPosition() {
 
 }
 void writeFingers(long int _angles[]) {
-  int defaultTime = 1000;
-  setAngles(_angles, defaultTime);
-  for (int i = 0; i < NUM_FINGERS_; i++) {
-    sf[i].writeAngle(_angles[i]);
-  }
-}
-
-void writeFingers(long int _angles[],int moveTime) {
-  setAngles(_angles, moveTime);
+  setAngles(_angles);
   for (int i = 0; i < NUM_FINGERS_; i++) {
     sf[i].writeAngle(_angles[i]);
   }
@@ -210,5 +202,5 @@ void receiveData(int bytecount) {
   for (int i = 5; i < _DATA_BYTES; i++) {
    percentAngles[i-5] = data[i];
   }
-  is_setup = 1;
+  setup = 1;
 }
