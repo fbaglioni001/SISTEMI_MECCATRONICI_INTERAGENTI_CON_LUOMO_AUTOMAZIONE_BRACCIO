@@ -1,90 +1,88 @@
 /*********************************************************************************************************
   BRACCIO ROBOTICO COMANDATO DA ROS
-  PROGRAMMA CONTROLLO BRACCIO A 3 GRADI DI LIBERTA'
-  mediante utilizzo tensy 4.1 e driver Tmc2208 V3.0
+  PROGRAMMA CONTROLLO BRACCIO
+  mediante l'utilizzo tensy 4.1 e driver DVR8825
   Authors: Baglioni Francesco (f.baglioni001@studenti.unibs.it )
-          Campregher Francesco (f.campregher@studenti.unibs.it)
-          Mirandola Edoardo (e.mirandola@studenti.unibs.it)
+           Campregher Francesco (f.campregher@studenti.unibs.it)
+           Mirandola Edoardo (e.mirandola@studenti.unibs.it)
   A.A. 2021/22
 
   REPO: https://github.com/fbaglioni001/SISTEMI_MECCATRONICI_INTERAGENTI_CON_LUOMO_AUTOMAZIONE_BRACCIO.git
 **********************************************************************************************************/
+#include "law.h"
+#include <Arduino.h>
+#include "Wire.h"
 
-#include <Wire.h>
-#include <Stepper.h>
+//define pin driver gestione motore 1 spalla
+#define pinDirSpalla1 0
+#define pinStepSpalla1 1
+#define pinEnSpalla1 4
 
-#define NUM_JOINTS_ 3 // numero giunti del braccio
+//define pin drier gestione motore 2 spalla
+#define pinDirSpalla2 5 
+#define pinStepSpalla2 6
+#define pinEnSpalla2 7
 
-//Definire passi minimi e massimi per ogni giunto.
-#define MAX_1 1  //1: spalla1
-#define MIN_1 1
+//define pin driver gestione motore gomito
+#define pinDirGomito 8
+#define pinStepGomito 9
+#define pinEnGomito 10 
 
-#define MAX_2 1 //2: spalla2
-#define MIN_2 1
+//define ingressi per sensori funzioni di homing del braccio
+#define fcSpalla1 11
+#define fcSpalla2 12
+#define fcGomito 13
 
-#define MAX_3 1 //3:gomito
-#define MIN_3 1
+//define pin enable per comunicazione i2c e definizione dei pin utilizzati per tale comunicazione
+#define i2c 14
+// define sda 18
+// define scl 19
 
-// DEFINIZIONE PIN STEPPER TENSY
+Motor spalla(2500, 10000, 155,1,2);
+Motor secondo(2500, 10000, 155,4,5);
 
-// Wire : Pin 19/A5 is SCL0, pin 18/A4 is SDA0;
-// Wire1: Pin 16/A2 is SCL1, pin 17/A3 is SDA1;
-// Wire2: Pad (underneath the Teensy) 24/A10 is SCL2, and pad 25/A11 is SDA2.
+void setup(){
+  pinMode(fcSpalla1, INPUT_PULLDOWN);
+  pinMode(fcSpalla2, INPUT_PULLDOWN);
+  pinMode(fcGomito, INPUT_PULLDOWN);
 
-#define en1 1 // enable driver spalla1
-#define en2 2 // enable driver spalla2 
-#define en3 3 // enable driver gomito
-#define en_comunication 2 //enable i2c impostato a 1 per non scrittura
-
-#define pin1 11
-#define pin2 10
-#define pin3 9
-
-long int steps[NUM_JOINTS_];
-
-void setup() {
-  pinMode(en_comunication, OUTPUT);
-  digitalWrite(en_comunication, HIGH);
-  noInterrupts();
-
-  pinMode(en1, OUTPUT);
-  pinMode(en2, OUTPUT);
-  pinMode(en3, OUTPUT);
+  pinMode(pinEnSpalla1,OUTPUT);
+  pinMode(pinEnSpalla2,OUTPUT);
+  pinMode(pinEnGomito,OUTPUT);
+  
+  pinMode(pinStepSpalla1,OUTPUT);
+  pinMode(pinStepSpalla2,OUTPUT);
+  pinMode(pinStepGomito,OUTPUT);
+  
+  pinMode(pinDirSpalla1,OUTPUT);
+  pinMode(pinDirSpalla2,OUTPUT);
+  pinMode(pinDirGomito,OUTPUT);
 
   Serial.begin(9600);
-  Wire.begin(32);
-  Wire.onReceive(receiveData);
-
-  Interrupts();
-  digitalWrite(en_comunication, LOW);
+  Serial.println("inizializzazione");
+  
 }
 
-void loop() {
+long long unsigned int times;
+unsigned int index_;
+unsigned int disp;
+unsigned int passi=0;
+bool sp=false,sec=false;
+void loop(){
+   
 
-  if (setup == 1) {
-    setAngles(angles);
-    digitalWrite(triggerPin, HIGH);
-    noInterrupts();
-
-    //code
+ passi+=10;
+ Serial.println("partito");
+ Serial.println(millis()/1000.0);
+ Serial.println(spalla.set_up(100,1));
+ Serial.println(secondo.set_up(2500,1));
+  while(!(sp && sec)){
+    sp=spalla.run();
+    sec=secondo.run();
   }
-
-  if (isMoving == 1) {
-    if (runToPosition() == 0) {
-      
-      interrupts();
-      digitalWrite(triggerPin,LOW);
-    }
-  }
-}
-
-// function i2c-------------------------------------------------------------------
-void receiveData(int bytecount)
-{
-  digitalWrite(en_comunication, HIGH);
-  for (int i = 0; i < bytecount; i++) {
-    steps[i] = Wire.read();
-    Serial.println(steps[i]);
-    setup = 1;
-  }
+ sp=false;
+ sec=false;
+ Serial.println(millis()/1000.0);
+ Serial.println("finito");
+ delay(2000);
 }
