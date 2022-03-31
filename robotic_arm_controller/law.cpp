@@ -18,14 +18,14 @@ bool Motor::run()
 	if(!is_possible){
 		return true;
 	}
-	long long unsigned int tc;
-	tc=(long long unsigned int)(((disp/2-disp_acc)*TIME_2_SECOND)/vel_max);
+	
   
 	if(!((time_tot)/2.0>=time_acc+tc)){
 	vel_max=vel_min+acc*time_acc/TIME_2_SECOND;
 	time_acc+=(long unsigned int)(TIME_2_SECOND/vel_max);
 	period[disp_acc]=((long unsigned int)(TIME_2_SECOND/vel_max));
   disp_acc+=1;
+  tc=(long long unsigned int)(((disp/2-disp_acc)*TIME_2_SECOND)/vel_max);
 	}
 	if(micros()-times >= period[index/2]/2){
 		times=micros();
@@ -45,22 +45,24 @@ bool Motor::run()
 }
 
 
-bool Motor::set_up(unsigned int _disp, float _time_tot)
+bool Motor::set_up(int _disp, float _time_tot)
 {
   current_disp=0;
   index=0;
   time_acc=0;
   disp_acc=0;
+  vel_max=vel_min;
 	directions=(_disp>0);
 	disp = abs(_disp);
+  Serial.println(abs(_disp));
 	time_tot = _time_tot*TIME_2_SECOND;
+  tc=(long long unsigned int)(((disp/2-disp_acc)*TIME_2_SECOND)/vel_max);
 	unsigned int acc_min=((2*disp*TIME_2_SECOND)/time_tot-vel_min)/time_tot*TIME_2_SECOND*2;
 	if(acc_min>acc){
 		is_possible=false;
 		return false;
-	}else{
-		is_possible=true;
 	}
+	is_possible=true;
 	if(disp/vel_min<=time_tot/TIME_2_SECOND){
 		period[0]=((long unsigned int)((float)time_tot/disp));
     times = micros();

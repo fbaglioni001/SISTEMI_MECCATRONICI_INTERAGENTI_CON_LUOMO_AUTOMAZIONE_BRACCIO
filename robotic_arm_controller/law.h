@@ -21,6 +21,7 @@ class Motor
 	  unsigned int index{0};
 	  unsigned int current_disp{0};
 	  bool is_possible;
+    long long unsigned int tc;
 
   public:
   	Motor(unsigned int _period_size, unsigned int _acc,unsigned int _vel_min, unsigned int _steps, unsigned int _dir);
@@ -33,7 +34,7 @@ class Motor
   	/*
   	*Setup the movment parameter. You have to call it before the run method.
   	*/
-  	bool set_up(unsigned int _disp, float _time_tot);
+  	bool set_up(int _disp, float _time_tot);
 
   private:
   	void toggle_pin(unsigned int _pin);
