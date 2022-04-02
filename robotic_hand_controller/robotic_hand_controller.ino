@@ -1,12 +1,24 @@
-#include "ServoHand.h"
-
+/*********************************************************************************************************
+  BRACCIO ROBOTICO COMANDATO DA ROS
+  PROGRAMMA CONTROLLO MANO A 5 GRADI DI LIBERTA'
+  mediante utilizzo arduino micro
+  Authors: Baglioni Francesco (f.baglioni001@studenti.unibs.it )
+           Campregher Francesco (f.campregher@studenti.unibs.it)
+           Mirandola Edoardo (e.mirandola@studenti.unibs.it)
+  A.A. 2021/22
+  REPO: https://github.com/fbaglioni001/SISTEMI_MECCATRONICI_INTERAGENTI_CON_LUOMO_AUTOMAZIONE_BRACCIO.git
+**********************************************************************************************************/
+#include "ServoFinger.h" //Classe sviluppata appositamente per gestire ogni dito
 #include <Wire.h>
 
 //a70,110,130,137,120,
 //a157,20,3,46,32,
-#define _DATA_BYTES 10
+
+#define _DATA_BYTES 10 //Numero di byte che vengono trasferiti via i2c
+
 #define NUM_FINGERS_ 5
-#define MAX_1 157000 //Definire gli angoli minimi per ogni dito. 
+//Tutti gli angoli sono moltiplicati per 100 in modo da lavorare con numeri interi.
+#define MAX_1 157000 //Definire gli angoli limite per ogni dito. 
 #define MIN_1 62000 //1: POLLICE
 #define MAX_2 125000
 #define MIN_2 17000 //2: INDICE
@@ -16,20 +28,25 @@
 #define MIN_4 38000 //4:ANULARE
 #define MAX_5 130000
 #define MIN_5 30000 //5:MIGNOLO
+
+//Definizione dei parametri che regolano la legge di moto
 #define _SMOOTHING 70
-#define _RESOLUTION 300
+#define _RESOLUTION 300 // 0.3 gradi
+
 // DEFINIZIONE PIN SERVO
 #define pin1 11
 #define pin2 10
 #define pin3 9
 #define pin4 6
 #define pin5 5
-//DEFINIZIONE VELOCITA' SERVO
+
+//DEFINIZIONE VELOCITA' MASSIMA SERVO
 #define _START_DELAY 10
 
 String comando = "";
-long unsigned int t[NUM_FINGERS_];
-long unsigned int t_offset = 0;
+
+long unsigned int t[NUM_FINGERS_]; //Array che contiene i passi temporali di ogni dito
+long unsigned int t_offset = 0;  // Offset temporale applicabile quando una movimentazione viene comandata (Come se fosse un delay)
 String dato = "";
 int is_setup = 0;
 int index = 0;
@@ -52,10 +69,11 @@ const long int max_angles[] = {
   MAX_4,
   MAX_5
 };
+
 long int angles[NUM_FINGERS_];
 int percentAngles[NUM_FINGERS_];
 long int deltaAngle[NUM_FINGERS_];
-int iterations[NUM_FINGERS_];
+int iterations[NUM_FINGERS_]; //Interazioni necessarie per eseguire la legge di moto
 ServoFinger sf[NUM_FINGERS_];
 
 //----------- Variabili i2c -------------
@@ -70,6 +88,7 @@ void setup() {
   for (int i = 0; i < NUM_FINGERS_; i++) {
     sf[i] = ServoFinger();
   }
+  // ============== SETUP DEGLI OGGETTI =================================
   sf[0].setAll(pin1, MIN_1, MAX_1, _START_DELAY, _RESOLUTION, _SMOOTHING);
   sf[1].setAll(pin2, MIN_2, MAX_2, _START_DELAY, _RESOLUTION, _SMOOTHING);
   sf[2].setAll(pin3, MIN_3, MAX_3, _START_DELAY, _RESOLUTION, _SMOOTHING);
@@ -84,38 +103,39 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  
   if (is_setup == 1) {
-    t_offset = millis();
-    if(isRelative == 0) {
+    t_offset = millis(); //Viene salvato il tempo assoluto attuale
+    
+    if(isRelative == 0) { //Le movimentazioni possono essere inviate in coordinate realitve o assolute
       for (int i = 0; i < NUM_FINGERS_; i++)
       {
-        angles[i] = home_angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]));
+        angles[i] = home_angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i])); //Assolute
       }
     } else {
       for (int i = 0; i < NUM_FINGERS_; i++)
       {
-        angles[i] = angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]));
+        angles[i] = angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i])); //Relative
       }
     }
 
-    setAngles(angles,totalTime);
-    digitalWrite(triggerPin, HIGH);
-    isMoving = 1;
-    is_setup = 0;
+    setAngles(angles,totalTime); // Settaggio dei parametri di ogni motore in base al moto da eseguire
+    digitalWrite(triggerPin, HIGH); //Da questo momento arduino non può rivere comandi via i2c dall'esterno
+    isMoving = 1; //Trigger di movimentazione avviata alzato
+    is_setup = 0; // setup movimentazione finito
     while(millis -t_offset < offsetTime) {
-
+        //Attendo il tempo rimanente
     }
     for (int i = 0; i < NUM_FINGERS_; i++) {
-      t[i] = millis();
+      t[i] = millis(); //Salvo il tempo assoluto attuale per ogni servomotore
     }
   }
   if (isMoving == 1) {
-    if (runToPosition() == 0) {
+    if (runToPosition() == 0) { // Il movimento ora viene eseguito con i tempi preimpostati, quando il movimento finisce si verifica runToPosition() = 0
       Serial.println("Movimento finito");
-      digitalWrite(triggerPin,LOW);
+      digitalWrite(triggerPin,LOW); //Il movimento è finito e arduino può ricevere comandi via i2c dall'esterno
     }
-  }
+  } 
 
 }
 
@@ -129,25 +149,26 @@ void attachHand() {
   }
 }
 
-void setAngles(long int _angles[], int totalTime) {
+void setAngles(long int _angles[], int totalTime) { //Il movimento viene pianificato
   for (int i = 0; i < NUM_FINGERS_; i++) {
     Serial.println("Finger " + String(i) + "--------------");
     sf[i].setAngle(_angles[i]);
     Serial.println("Angle = " + String(_angles[i]));
     deltaAngle[i] = abs(sf[i].getAngle() - sf[i].getPreviousAngle());
     Serial.println("dAngle = " + String(deltaAngle[i]));
-    iterations[i] = sf[i].getTotalIterations(_angles[i], sf[i].getPreviousAngle());
+    iterations[i] = sf[i].getTotalIterations(_angles[i], sf[i].getPreviousAngle()); //Viene calcolato il numero di passi da eseguire per completare il movimento
     Serial.println("Iter = " + String(iterations[i]));
   }
-  int maxTime = getMax(iterations) * _START_DELAY;
-  if(totalTime > maxTime) {
+  int maxTime = getMax(iterations) * _START_DELAY; // Calcolo il tempo che impiega il servo più lento alla massima velocità
+  if(totalTime > maxTime) { //Se il tempo totale imposto è maggiore del tempo minimo di movimentazione allor il tempo totae sarà quello imposto
     maxTime = totalTime;
   }
+  
   for (int i = 0; i < NUM_FINGERS_; i++) {
     int act_delay = 0;
     if (iterations[i] != 0) {
       Serial.println(String(maxTime) + "/" + String(iterations[i]));
-      act_delay = max(_START_DELAY, round((float) maxTime / iterations[i]));
+      act_delay = max(_START_DELAY, round((float) maxTime / iterations[i])); //calcolo il tempo tra un passo e l'altro come tempo totale / numero di passi
     } else {
       act_delay = _START_DELAY;
     }

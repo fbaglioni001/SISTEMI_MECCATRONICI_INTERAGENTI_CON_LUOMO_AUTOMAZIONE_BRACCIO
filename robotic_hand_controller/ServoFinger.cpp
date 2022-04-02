@@ -97,7 +97,7 @@
 	}
 	void ServoFinger::writeAngle(long int _angle) {
 	if (_angle>= minAngle && _angle <= maxAngle) {
-		if(abs(angle - _angle) >= resolution) {
+		if(abs(angle - _angle) >= resolution) { //Se la differenza tra angolo attuale e angolo richiesto è > della risoluzione angolare
         previousAngle = _angle;
       	servo.write(_angle/1000);
     	} else {
@@ -105,7 +105,7 @@
     	}
 	}
 	}
-	long int ServoFinger::getNext() {
+	long int ServoFinger::getNext() { 
 		if(abs(angle - previousAngle) >= resolution) {
 			return (smoothing*angle)/1000 + ((1000 - smoothing)*previousAngle)/1000;
 		} else {
