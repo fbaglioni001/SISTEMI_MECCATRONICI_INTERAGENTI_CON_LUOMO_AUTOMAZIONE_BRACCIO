@@ -9,26 +9,26 @@
   REPO: https://github.com/fbaglioni001/SISTEMI_MECCATRONICI_INTERAGENTI_CON_LUOMO_AUTOMAZIONE_BRACCIO.git
 **********************************************************************************************************/
 
-#include "ServoHand.h"
+//#include "ServoHand.h"
 #include <Wire.h>
-
+#include "ServoFinger.h"
 // DEFINIZIONE PIN SERVO ARDUINO MICRO
 // pin D3 18 SCL
 // pin D2 19 SDA
 
-#define _DATA_BYTES 10
+#define _DATA_BYTES 7
 #define NUM_WRIST_ 2
 
-#define MAX_1 157000  //1: polso1
-#define MIN_1 62000
-#define MAX_2 125000 //2: polso2
-#define MIN_2 17000
+#define MAX_1 175000  //1: polso1
+#define MIN_1 1
+#define MAX_2 175000 //2: polso2
+#define MIN_2 1
 
 #define _SMOOTHING 70
 #define _RESOLUTION 300
 
 // DEFINIZIONE PIN SERVO
-#define pin1 11
+#define pin1 9
 #define pin2 10
 #define en_comunication 2 //enable i2c impostato a 1 per non scrittura
 
@@ -36,15 +36,15 @@
 #define _START_DELAY 10
 
 String comando = "";
-long unsigned int t[NUM_WRIST];
+long unsigned int t[NUM_WRIST_];
 long unsigned int t_offset = 0;
 String dato = "";
 int is_setup = 0;
 int index = 0;
 int isMoving = 0;
 int isRelative = 0;
-uint offsetTime = 0;
-uint totalTime = 0;
+unsigned int offsetTime = 0;
+unsigned int totalTime = 0;
 //VARIABILI MANO:
 const long int home_angles[] = {
   MIN_1,
@@ -55,10 +55,10 @@ const long int max_angles[] = {
   MAX_2,
 };
 long int angles[NUM_WRIST_];
-int percentAngles[NUM_WRIST];
-long int deltaAngle[NUM_WRIST];
-int iterations[NUM_WRIST];
-ServoFinger sf[NUM_WRIST];
+int percentAngles[NUM_WRIST_];
+long int deltaAngle[NUM_WRIST_];
+int iterations[NUM_WRIST_];
+ServoFinger sf[NUM_WRIST_];
 
 //----------- Variabili i2c -------------
 unsigned int triggerPin = en_comunication;
@@ -83,7 +83,7 @@ void setup() {
       sf[i].attachServo();
     }
     homing();
-  Interrupts();
+  interrupts();
   digitalWrite(en_comunication, LOW);
 }
 
@@ -91,12 +91,14 @@ void loop() {
   if (is_setup == 1) {
     t_offset = millis();
     if(isRelative == 0) {
-      for (int i = 0; i < NUM_WRIST; i++)
+      for (int i = 0; i < NUM_WRIST_; i++)
       {
-        angles[i] = home_angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]));
+        angles[i] = home_angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]))/100;
+        Serial.print("ANGOLO:");
+        Serial.println(angles[i]);
       }
     } else {
-      for (int i = 0; i < NUM_WRIST; i++)
+      for (int i = 0; i < NUM_WRIST_; i++)
       {
         angles[i] = angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]));
       }
@@ -106,10 +108,10 @@ void loop() {
     digitalWrite(triggerPin, HIGH);
     isMoving = 1;
     is_setup = 0;
-    while(millis -t_offset < offsetTime) {
-
-    }
-    for (int i = 0; i < NUM_WRIST; i++) {
+//    while(millis -t_offset < offsetTime) {
+//
+//    }
+    for (int i = 0; i < NUM_WRIST_; i++) {
       t[i] = millis();
     }
   }
@@ -208,10 +210,21 @@ void receiveData(int bytecount) {
     data[i] = Wire.read();   
   }
   isRelative = data[0];
-  totalTime =(((int16_t) data[1]) << 8 | data[2]);
+  totalTime =(((int16_t) data[1]) << 8 | data[2])*2;
   offsetTime =(((int16_t) data[3]) << 8 | data[4]);
   for (int i = 5; i < _DATA_BYTES; i++) {
    percentAngles[i-5] = data[i];
+    Serial.print("Percent ");
+  Serial.println(i-5);
+   Serial.print(" : ");
+  Serial.println(percentAngles[i-5]);
   }
   is_setup = 1;
+  Serial.print("ISRELATIVE: ");
+  Serial.println(isRelative);
+   Serial.print("TotalTime: ");
+  Serial.println(totalTime);
+   Serial.print("offsetTime: ");
+  Serial.println(offsetTime);
+  
 }
