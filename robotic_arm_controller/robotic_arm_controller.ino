@@ -121,9 +121,10 @@ void loop(){
  spalla1.set_up(passi,3);
  spalla2.set_up(passi,3);
  //gomito.set_up(passi,3);
-
+ 
  //ciclo di movimentazione
- while(!(move_s1 && move_s2 && move_g)){
+ // while(!(move_s1 && move_s2 && move_g)){
+ while(!(move_s1 && move_s2 )){
    move_s1 = spalla1.run();
    move_s2 = spalla2.run();
    //move_g = gomito.run();
