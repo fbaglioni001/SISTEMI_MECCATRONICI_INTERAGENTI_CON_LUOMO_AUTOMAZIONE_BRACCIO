@@ -9,14 +9,15 @@
 
   REPO: https://github.com/fbaglioni001/SISTEMI_MECCATRONICI_INTERAGENTI_CON_LUOMO_AUTOMAZIONE_BRACCIO.git
 **********************************************************************************************************/
+
 #include "law.h"
 #include <Arduino.h>
 #include "Wire.h"
 
 //define pin driver gestione motore 1 spalla
-#define pinDirSpalla1 0
-#define pinStepSpalla1 1
-#define pinEnSpalla1 2
+#define pinDirSpalla1 6
+#define pinStepSpalla1 7
+#define pinEnSpalla1 8
 
 //define pin drier gestione motore 2 spalla
 #define pinDirSpalla2 3
@@ -24,14 +25,14 @@
 #define pinEnSpalla2 5
 
 //define pin driver gestione motore gomito
-#define pinDirGomito 6
-#define pinStepGomito 7
-#define pinEnGomito 8
+#define pinDirGomito 0
+#define pinStepGomito 1
+#define pinEnGomito 2
 
 //define ingressi per sensori funzioni di homing del braccio
-#define fcSpalla1 9
-#define fcSpalla2 10
-#define fcGomito 11
+#define fcSpalla1 10
+#define fcSpalla2 11
+#define fcGomito 9
 
 //define pin enable per comunicazione i2c e definizione dei pin utilizzati per tale comunicazione
 #define triggerPin 33
@@ -70,9 +71,47 @@ void setup(){
   Serial.println("inizializzazione");
 
   //funzioni di homing chiamate per ogni asse del braccio 
-  //homing(fcSpalla1,pinStepSpalla1,pinDirSpalla1,true,1000);
-  //homing(fcSpalla2,pinStepSpalla2,pinDirSpalla2,true,1000);
-  //homing(fcGomito,pinStepGomito,pinDirGomito,true,1000);
+  //homing asse1
+  homing(fcSpalla1,pinStepSpalla1,pinDirSpalla1,false,200,2,5,15);
+  
+  //posizionamneto per homing asse 3
+  unsigned int passis = 4000;
+  digitalWrite(pinDirSpalla1,!digitalRead(pinDirSpalla1));
+  while(passis>0) {
+    digitalWrite(pinStepSpalla1, HIGH);
+    delay(1);
+    digitalWrite(pinStepSpalla1, LOW);
+    delay(1);
+    passis = passis-1;
+  }
+  
+  //homing asse2
+  homing(fcGomito,pinStepGomito,pinDirGomito,true,500,2,5,10) ;
+  
+  //posizonamento asse 3 e asse 1 per foming asse 2
+  passis = 1500;
+  digitalWrite(pinDirGomito,!digitalRead(pinDirGomito));
+  while(passis>0) {
+    digitalWrite(pinStepGomito, HIGH);
+    delay(2);
+    digitalWrite(pinStepGomito, LOW);
+    delay(2);
+    passis = passis-1;
+  }
+  
+  passis = 1800;
+  digitalWrite(pinDirSpalla1,!digitalRead(pinDirSpalla1));
+  while(passis>0) {
+    digitalWrite(pinStepSpalla1, HIGH);
+    delay(1);
+    digitalWrite(pinStepSpalla1, LOW);
+    delay(1);
+    passis = passis-1;
+  }
+  
+  //homing asse2
+  homing(fcSpalla2,pinStepSpalla2,pinDirSpalla2,true,1000,2,5,10);
+  
 
   //Wire.begin(22);
   //Wire.onReceive(receiveData);
@@ -114,7 +153,7 @@ void loop(){
     }
   }
   */
-  
+ /* 
  passi=-passi;
  Serial.println("partito");
  Serial.println(millis()/1000.0);
@@ -136,53 +175,57 @@ void loop(){
  
  Serial.println(millis()/1000.0);
  Serial.println("finito");
- delay(2000);
+ delay(2000);*/
 }
 
 //funzione per l'homig del braccio
-void homing(int sensore, int steps,int directions,bool start_dir,int passi){
+void homing(int sensore, int steps,int directions,bool start_dir,int passi,int vsteps1,int vsteps2, int vsteps3){
   /*
    * int sensore    -> pin corrispettivo al motore per il quale si desidera fare homing
    * int steps      -> pin per comandare il DVR8825 con i passi da svolgere
    * int direction  -> pin per settare la direzione del DVR8825 per fare l'homing
    * bool start_dir -> 1 / 0 per scegliere la direzione con cui partire per la fase di homing
    * int passi      -> numero di passi dasvolgere per l'allontanamento dal sensore
+   * int vsteps1    -> velocità dei passi per avvicinamento al sensore 1°ciclo
+   * int vsteps1    -> velocità dei passi per allontanamento al sensore 
+   * int vsteps1    -> velocità dei passi per avvicinamento al sensore 2°ciclo
   */
+  
   digitalWrite(directions,start_dir);
   bool a = false;
   // primo ciclo di homing per trovare il sensore
   while(a == false) {
     digitalWrite(steps, HIGH);
-    delay(1);
+    delay(vsteps1);
     digitalWrite(steps, LOW);
-    delay(1);
+    delay(vsteps1);
     if(digitalRead(sensore) == LOW) {
       a = true;
     }
   }
   
-  delay(10);
+  delay(150);
   digitalWrite(directions,!digitalRead(directions));
   
   // mi allontano dal sensore per avere una miglio precisione di posizionamento
   while(passi>0) {
     digitalWrite(steps, HIGH);
-    delay(1);
+    delay(vsteps2);
     digitalWrite(steps, LOW);
-    delay(1);
+    delay(vsteps2);
     passi = passi-1;
   }
   
-  delay(10) ;
+  delay(100) ;
   digitalWrite(directions,!digitalRead(directions));
   a = false;
   
   //mi riavvicino al sensore a una velocità inferiore per avere un miglior posizionamento di homing
   while(a == false) {
     digitalWrite(steps, HIGH);
-    delay(5);
+    delay(vsteps3);
     digitalWrite(steps, LOW);
-    delay(5);
+    delay(vsteps3);
     if(digitalRead(sensore) == LOW) {
       a = true;
     }
