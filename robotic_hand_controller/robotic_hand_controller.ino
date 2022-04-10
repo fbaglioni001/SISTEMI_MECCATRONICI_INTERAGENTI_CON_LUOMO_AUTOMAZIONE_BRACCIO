@@ -49,7 +49,7 @@ long unsigned int t[NUM_FINGERS_]; //Array che contiene i passi temporali di ogn
 long unsigned int t_offset = 0;  // Offset temporale applicabile quando una movimentazione viene comandata (Come se fosse un delay)
 String dato = "";
 int is_setup = 0;
-int index = 0;
+int index_ = 0;
 int isMoving = 0;
 int isRelative = 0;
 unsigned int offsetTime = 0;

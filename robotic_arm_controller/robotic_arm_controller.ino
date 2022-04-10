@@ -71,25 +71,11 @@ void setup(){
   Serial.println("inizializzazione");
 
   //funzioni di homing chiamate per ogni asse del braccio 
-  //homing asse1
-  homing(fcSpalla1,pinStepSpalla1,pinDirSpalla1,false,200,2,5,15);
-  
-  //posizionamneto per homing asse 3
-  unsigned int passis = 4000;
-  digitalWrite(pinDirSpalla1,!digitalRead(pinDirSpalla1));
-  while(passis>0) {
-    digitalWrite(pinStepSpalla1, HIGH);
-    delay(1);
-    digitalWrite(pinStepSpalla1, LOW);
-    delay(1);
-    passis = passis-1;
-  }
-  
-  //homing asse2
-  homing(fcGomito,pinStepGomito,pinDirGomito,true,500,2,5,10) ;
+  //homing asse3
+  homing(fcGomito,pinStepGomito,pinDirGomito,true,200,1,2,10) ;
   
   //posizonamento asse 3 e asse 1 per foming asse 2
-  passis = 1500;
+  unsigned int passis = 500;
   digitalWrite(pinDirGomito,!digitalRead(pinDirGomito));
   while(passis>0) {
     digitalWrite(pinStepGomito, HIGH);
@@ -97,9 +83,12 @@ void setup(){
     digitalWrite(pinStepGomito, LOW);
     delay(2);
     passis = passis-1;
-  }
+  } 
+  //homing asse1
+  homing(fcSpalla1,pinStepSpalla1,pinDirSpalla1,false,200,2,5,15);
   
-  passis = 1800;
+  //posizionamneto per homing asse 3
+  passis = 2400;
   digitalWrite(pinDirSpalla1,!digitalRead(pinDirSpalla1));
   while(passis>0) {
     digitalWrite(pinStepSpalla1, HIGH);
@@ -109,12 +98,34 @@ void setup(){
     passis = passis-1;
   }
   
-  //homing asse2
-  homing(fcSpalla2,pinStepSpalla2,pinDirSpalla2,true,1000,2,5,10);
   
-
-  //Wire.begin(22);
-  //Wire.onReceive(receiveData);
+  
+  
+//  passis = 1800;
+//  digitalWrite(pinDirSpalla1,!digitalRead(pinDirSpalla1));
+//  while(passis>0) {
+//    digitalWrite(pinStepSpalla1, HIGH);
+//    delay(1);
+//    digitalWrite(pinStepSpalla1, LOW);
+//    delay(1);
+//    passis = passis-1;
+//  }
+//  
+  //homing asse2
+  homing(fcSpalla2,pinStepSpalla2,pinDirSpalla2,true,100,4,8,15);
+    passis = 1400;
+  digitalWrite(pinDirSpalla2,!digitalRead(pinDirSpalla2));
+  while(passis>0) {
+    digitalWrite(pinStepSpalla2, HIGH);
+    delay(2);
+    digitalWrite(pinStepSpalla2, LOW);
+    delay(2);
+    passis = passis-1;
+  }
+//  
+//
+//  //Wire.begin(22);
+//  //Wire.onReceive(receiveData);
   
 }
 
