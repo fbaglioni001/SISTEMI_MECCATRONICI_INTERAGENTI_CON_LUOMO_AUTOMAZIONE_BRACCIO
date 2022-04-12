@@ -1,0 +1,11 @@
+int8[]    data
+int8    length
+uint16    address
+bool    is_question
+int8    question_length
+uint8    pin
+---
+int8[]    data
+bool    is_ok
+bool    is_working
+
