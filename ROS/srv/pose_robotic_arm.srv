@@ -1,6 +1,9 @@
-int8[]    hand
-int8[]    wrist
-int8[]    shoulder
+int16[]    hand_angle
+int16[]    wrist_angle
+int16[]    shoulder_angle
+int16[]    hand_time
+int16[]    wrist_time
+int16[]    shoulder_time
 bool    is_rel
 ---
 bool    is_ok
