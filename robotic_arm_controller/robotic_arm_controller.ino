@@ -72,7 +72,8 @@ void setup(){
 
   //funzioni di homing chiamate per ogni asse del braccio 
   //homing asse3
-  homing(fcGomito,pinStepGomito,pinDirGomito,true,200,1,2,10) ;
+  
+  homing(fcGomito,pinStepGomito,pinDirGomito,true,500,1,2,10) ;
   
   //posizonamento asse 3 e asse 1 per foming asse 2
   unsigned int passis = 500;
@@ -204,16 +205,26 @@ void homing(int sensore, int steps,int directions,bool start_dir,int passi,int v
   
   digitalWrite(directions,start_dir);
   bool a = false;
+  int iter = 0;
   // primo ciclo di homing per trovare il sensore
+  
+   while(a == false) {
+    if(digitalRead(sensore) == LOW) {
+      a = true;
+    }}
+    delay(150);
+    a = false;
   while(a == false) {
     digitalWrite(steps, HIGH);
     delay(vsteps1);
     digitalWrite(steps, LOW);
     delay(vsteps1);
+    iter++;
     if(digitalRead(sensore) == LOW) {
       a = true;
     }
   }
+  
   
   delay(150);
   digitalWrite(directions,!digitalRead(directions));
@@ -226,7 +237,7 @@ void homing(int sensore, int steps,int directions,bool start_dir,int passi,int v
     delay(vsteps2);
     passi = passi-1;
   }
-  
+  iter = iter-passi;
   delay(100) ;
   digitalWrite(directions,!digitalRead(directions));
   a = false;
@@ -237,10 +248,12 @@ void homing(int sensore, int steps,int directions,bool start_dir,int passi,int v
     delay(vsteps3);
     digitalWrite(steps, LOW);
     delay(vsteps3);
+    iter++;
     if(digitalRead(sensore) == LOW) {
       a = true;
     }
   }
+  Serial.println(iter);
   
 }
 

@@ -70,6 +70,7 @@ void setup() {
   noInterrupts();
 
   Serial.begin(9600);
+  while (!Serial)
   Wire.begin(42);
   Wire.onReceive(receiveData);
   for (int i = 0; i < NUM_WRIST_; i++) {
@@ -100,7 +101,7 @@ void loop() {
     } else {
       for (int i = 0; i < NUM_WRIST_; i++)
       {
-        angles[i] = angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]));
+        angles[i] = angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]))/100;
       }
     }
 

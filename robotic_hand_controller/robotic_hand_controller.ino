@@ -35,14 +35,16 @@
 
 // DEFINIZIONE PIN SERVO
 #define pin1 11
-#define pin2 10
-#define pin3 9
-#define pin4 6
+#define pin2 12
+#define pin3 10
+#define pin4 9
 #define pin5 5
+#define en_comunication 2 //enable i2c impostato a 1 per non scrittura
 
 //DEFINIZIONE VELOCITA' MASSIMA SERVO
 #define _START_DELAY 10
 
+bool test_case = true;
 String comando = "";
 
 long unsigned int t[NUM_FINGERS_]; //Array che contiene i passi temporali di ogni dito
@@ -77,12 +79,18 @@ int iterations[NUM_FINGERS_]; //Interazioni necessarie per eseguire la legge di 
 ServoFinger sf[NUM_FINGERS_];
 
 //----------- Variabili i2c -------------
-unsigned int triggerPin = 13;
+unsigned int triggerPin = en_comunication;
 int data[_DATA_BYTES];
 
 void setup() {
+  pinMode(en_comunication, OUTPUT);
+  digitalWrite(en_comunication, HIGH);
+  noInterrupts();
   Serial.begin(9600);
+  while (!Serial)
+  
   Wire.begin(22);
+  
   Wire.onReceive(receiveData);
   pinMode(triggerPin, OUTPUT);
   for (int i = 0; i < NUM_FINGERS_; i++) {
@@ -100,9 +108,24 @@ void setup() {
     sf[i].attachServo();
   }
   homing();
+ interrupts();
+  digitalWrite(en_comunication, LOW);
 }
 
 void loop() {
+
+  //////////////////
+  if(Serial.available()) {
+   comando = Serial.readString();
+   if(comando.startsWith("a")) {
+    test(); 
+    Serial.println(percentAngles[2]);
+   } else if (comando.startsWith("b")) {
+    test1();
+    Serial.println(percentAngles[2]);
+   }
+  }
+  
   
   if (is_setup == 1) {
     t_offset = millis(); //Viene salvato il tempo assoluto attuale
@@ -110,12 +133,14 @@ void loop() {
     if(isRelative == 0) { //Le movimentazioni possono essere inviate in coordinate realitve o assolute
       for (int i = 0; i < NUM_FINGERS_; i++)
       {
-        angles[i] = home_angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i])); //Assolute
+        angles[i] = home_angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]))/100;
+        Serial.print("ANGOLO:");
+        Serial.println(angles[i]);
       }
     } else {
       for (int i = 0; i < NUM_FINGERS_; i++)
       {
-        angles[i] = angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i])); //Relative
+        angles[i] = angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]))/100; //Relative
       }
     }
 
@@ -230,6 +255,29 @@ void receiveData(int bytecount) {
   offsetTime =(((int16_t) data[3]) << 8 | data[4]);
   for (int i = 5; i < _DATA_BYTES; i++) {
    percentAngles[i-5] = data[i];
+  }
+  is_setup = 1;
+}
+
+void test() {
+  
+    isRelative = 0;
+  totalTime = 3000;
+  offsetTime = 0;
+  for (int i = 0; i < 5; i++) {
+   percentAngles[i] = 10;
+  }
+  is_setup = 1;
+  }
+  
+  
+  
+void test1() {
+      isRelative = 0;
+  totalTime = 1500;
+  offsetTime = 0;
+  for (int i = 0; i < 5; i++) {
+   percentAngles[i] = 90;
   }
   is_setup = 1;
 }
