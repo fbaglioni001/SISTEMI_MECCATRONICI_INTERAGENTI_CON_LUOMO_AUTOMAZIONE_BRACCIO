@@ -1,0 +1,6 @@
+int8[]    hand
+int8[]    wrist
+int8[]    shoulder
+bool    is_rel
+---
+bool    is_ok
