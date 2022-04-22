@@ -25,7 +25,7 @@ public:
 	long int getNext();
  	int getIsMoving();
  	void setIsMoving(int _state);
- 	int run(long int *t);
+ 	int _run(long int *t);
   int getResolution();
   int getSmoothing();
   void equal(ServoFinger sf);

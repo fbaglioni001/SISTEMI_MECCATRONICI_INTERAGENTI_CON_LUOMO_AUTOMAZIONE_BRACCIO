@@ -112,7 +112,7 @@
 			return angle;
 		}
 	}
-	int ServoFinger::run(long int *t) { 
+	int ServoFinger::_run(long int *t) { 
 		if(millis() - *t > delayMillis) {
     		long int next = getNext();
         //Serial.println(previousAngle);

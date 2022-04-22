@@ -85,13 +85,13 @@ int data[_DATA_BYTES];
 void setup() {
   pinMode(en_comunication, OUTPUT);
   digitalWrite(en_comunication, HIGH);
-  noInterrupts();
+  
   Serial.begin(9600);
-  while (!Serial)
+  //while (!Serial)
   
-  Wire.begin(22);
-  
+  Wire.begin(22); 
   Wire.onReceive(receiveData);
+  noInterrupts();
   pinMode(triggerPin, OUTPUT);
   for (int i = 0; i < NUM_FINGERS_; i++) {
     sf[i] = ServoFinger();
@@ -107,6 +107,7 @@ void setup() {
   for (int i = 0; i < NUM_FINGERS_; i++) {
     sf[i].attachServo();
   }
+  delay(500);
   homing();
  interrupts();
   digitalWrite(en_comunication, LOW);
@@ -115,17 +116,13 @@ void setup() {
 void loop() {
 
   //////////////////
-  if(Serial.available()) {
-   comando = Serial.readString();
-   if(comando.startsWith("a")) {
-    test(); 
-    Serial.println(percentAngles[2]);
-   } else if (comando.startsWith("b")) {
+  if(isMoving == 0) {
+  if(test_case) {
+    test();
+  } else {
     test1();
-    Serial.println(percentAngles[2]);
-   }
   }
-  
+  }
   
   if (is_setup == 1) {
     t_offset = millis(); //Viene salvato il tempo assoluto attuale
@@ -134,13 +131,13 @@ void loop() {
       for (int i = 0; i < NUM_FINGERS_; i++)
       {
         angles[i] = home_angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]))/100;
-        Serial.print("ANGOLO:");
-        Serial.println(angles[i]);
+        //Serial.print("ANGOLO:");
+        //Serial.println(angles[i]);
       }
     } else {
       for (int i = 0; i < NUM_FINGERS_; i++)
       {
-        angles[i] = angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]))/100; //Relative
+        angles[i] = angles[i] + (long int)((percentAngles[i]*(max_angles[i]-home_angles[i]))/100.0); //Relative
       }
     }
 
@@ -156,9 +153,10 @@ void loop() {
     }
   }
   if (isMoving == 1) {
-    if (runToPosition() == 0) { // Il movimento ora viene eseguito con i tempi preimpostati, quando il movimento finisce si verifica runToPosition() = 0
-      Serial.println("Movimento finito");
+    if (_runToPosition() == 0) { // Il movimento ora viene eseguito con i tempi preimpostati, quando il movimento finisce si verifica runToPosition() = 0
+      //Serial.println("Movimento finito");
       digitalWrite(triggerPin,LOW); //Il movimento è finito e arduino può ricevere comandi via i2c dall'esterno
+      test_case = !test_case;
     }
   } 
 
@@ -176,13 +174,13 @@ void attachHand() {
 
 void setAngles(long int _angles[], int totalTime) { //Il movimento viene pianificato
   for (int i = 0; i < NUM_FINGERS_; i++) {
-    Serial.println("Finger " + String(i) + "--------------");
+    //Serial.println("Finger " + String(i) + "--------------");
     sf[i].setAngle(_angles[i]);
-    Serial.println("Angle = " + String(_angles[i]));
+    //Serial.println("Angle = " + String(_angles[i]));
     deltaAngle[i] = abs(sf[i].getAngle() - sf[i].getPreviousAngle());
-    Serial.println("dAngle = " + String(deltaAngle[i]));
+    //Serial.println("dAngle = " + String(deltaAngle[i]));
     iterations[i] = sf[i].getTotalIterations(_angles[i], sf[i].getPreviousAngle()); //Viene calcolato il numero di passi da eseguire per completare il movimento
-    Serial.println("Iter = " + String(iterations[i]));
+    //Serial.println("Iter = " + String(iterations[i]));
   }
   int maxTime = getMax(iterations) * _START_DELAY; // Calcolo il tempo che impiega il servo più lento alla massima velocità
   if(totalTime > maxTime) { //Se il tempo totale imposto è maggiore del tempo minimo di movimentazione allor il tempo totae sarà quello imposto
@@ -192,17 +190,17 @@ void setAngles(long int _angles[], int totalTime) { //Il movimento viene pianifi
   for (int i = 0; i < NUM_FINGERS_; i++) {
     int act_delay = 0;
     if (iterations[i] != 0) {
-      Serial.println(String(maxTime) + "/" + String(iterations[i]));
+      //Serial.println(String(maxTime) + "/" + String(iterations[i]));
       act_delay = max(_START_DELAY, round((float) maxTime / iterations[i])); //calcolo il tempo tra un passo e l'altro come tempo totale / numero di passi
     } else {
       act_delay = _START_DELAY;
     }
     sf[i].setDelay(act_delay);
-    Serial.println("Delay = " + String(act_delay));
+    //Serial.println("Delay = " + String(act_delay));
   }
 }
 
-int runToPosition() {
+int _runToPosition() {
   int a = 0;
   for (int i = 0; i < NUM_FINGERS_; i++) {
     if (sf[i].getIsMoving() == 1) {
@@ -262,10 +260,14 @@ void receiveData(int bytecount) {
 void test() {
   
     isRelative = 0;
-  totalTime = 3000;
+  totalTime = 600;
   offsetTime = 0;
   for (int i = 0; i < 5; i++) {
-   percentAngles[i] = 10;
+    int p_ang = 10;
+   if(i == 0) {
+    p_ang = 100 - p_ang;
+   }
+   percentAngles[i] = p_ang;
   }
   is_setup = 1;
   }
@@ -274,10 +276,14 @@ void test() {
   
 void test1() {
       isRelative = 0;
-  totalTime = 1500;
+  totalTime = 600;
   offsetTime = 0;
   for (int i = 0; i < 5; i++) {
-   percentAngles[i] = 90;
+   int p_ang = 90;
+   if(i == 0) {
+    p_ang = 100 - p_ang;
+   }
+   percentAngles[i] = p_ang;
   }
   is_setup = 1;
 }

@@ -19,23 +19,24 @@
 #define _DATA_BYTES 7
 #define NUM_WRIST_ 2
 
-#define MAX_1 175000  //1: polso1
+#define MAX_1 180000  //1: polso1 53% mezzeria polso
 #define MIN_1 1
-#define MAX_2 175000 //2: polso2
+#define MAX_2 180000 //2: polso2 53% mezzeria polso
 #define MIN_2 1
 
 #define _SMOOTHING 70
 #define _RESOLUTION 300
 
 // DEFINIZIONE PIN SERVO
-#define pin1 9
-#define pin2 10
-#define en_comunication 2 //enable i2c impostato a 1 per non scrittura
+#define pin1 11
+#define pin2 12
+#define en_comunication 7 //enable i2c impostato a 1 per non scrittura
 
 //DEFINIZIONE VELOCITA' SERVO
 #define _START_DELAY 10
 
 String comando = "";
+bool test_case = true;
 long unsigned int t[NUM_WRIST_];
 long unsigned int t_offset = 0;
 String dato = "";
@@ -66,13 +67,15 @@ int data[_DATA_BYTES];
 
 void setup() {
   pinMode(en_comunication, OUTPUT);
+  pinMode(pin1, OUTPUT);
+  pinMode(pin2, OUTPUT);
   digitalWrite(en_comunication, HIGH);
-  noInterrupts();
 
   Serial.begin(9600);
-  while (!Serial)
+  //while (!Serial)
   Wire.begin(42);
   Wire.onReceive(receiveData);
+  noInterrupts();
   for (int i = 0; i < NUM_WRIST_; i++) {
       sf[i] = ServoFinger();
     }
@@ -89,19 +92,39 @@ void setup() {
 }
 
 void loop() {
+
+  //////////////////
+  
+//  if(Serial.available() > 4) {
+//   int ang1 = Serial.parseInt();
+//   Serial.println(ang1);
+//   int ang2 = Serial.parseInt();
+//   Serial.println(ang2);
+//    test(ang1); 
+//    test1(ang2);
+//    }
+
+   if(isMoving == 0) {
+  if(test_case) {
+    test2();
+  } else {
+    test3();
+  }
+  }
+  
   if (is_setup == 1) {
     t_offset = millis();
     if(isRelative == 0) {
       for (int i = 0; i < NUM_WRIST_; i++)
       {
         angles[i] = home_angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]))/100;
-        Serial.print("ANGOLO:");
-        Serial.println(angles[i]);
+        //Serial.print("ANGOLO:");
+        //Serial.println(angles[i]);
       }
     } else {
       for (int i = 0; i < NUM_WRIST_; i++)
       {
-        angles[i] = angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]))/100;
+        angles[i] = angles[i] + (long int)((percentAngles[i]*(max_angles[i]-home_angles[i]))/100.0);
       }
     }
 
@@ -117,9 +140,10 @@ void loop() {
     }
   }
   if (isMoving == 1) {
-    if (runToPosition() == 0) {
-      Serial.println("Movimento finito");
+    if (_runToPosition() == 0) {
+      //Serial.println("Movimento finito");
       digitalWrite(triggerPin,LOW);
+      test_case = !test_case;
     }
   }
 }
@@ -137,13 +161,13 @@ void attachHand() {
 
 void setAngles(long int _angles[], int totalTime) {
   for (int i = 0; i < NUM_WRIST_; i++) {
-    Serial.println("Finger " + String(i) + "--------------");
+    //Serial.println("Finger " + String(i) + "--------------");
     sf[i].setAngle(_angles[i]);
-    Serial.println("Angle = " + String(_angles[i]));
+    //Serial.println("Angle = " + String(_angles[i]));
     deltaAngle[i] = abs(sf[i].getAngle() - sf[i].getPreviousAngle());
-    Serial.println("dAngle = " + String(deltaAngle[i]));
+    //Serial.println("dAngle = " + String(deltaAngle[i]));
     iterations[i] = sf[i].getTotalIterations(_angles[i], sf[i].getPreviousAngle());
-    Serial.println("Iter = " + String(iterations[i]));
+    //Serial.println("Iter = " + String(iterations[i]));
   }
   int maxTime = getMax(iterations) * _START_DELAY;
   if(totalTime > maxTime) {
@@ -152,21 +176,21 @@ void setAngles(long int _angles[], int totalTime) {
   for (int i = 0; i < NUM_WRIST_; i++) {
     int act_delay = 0;
     if (iterations[i] != 0) {
-      Serial.println(String(maxTime) + "/" + String(iterations[i]));
+      //Serial.println(String(maxTime) + "/" + String(iterations[i]));
       act_delay = max(_START_DELAY, round((float) maxTime / iterations[i]));
     } else {
       act_delay = _START_DELAY;
     }
     sf[i].setDelay(act_delay);
-    Serial.println("Delay = " + String(act_delay));
+    //Serial.println("Delay = " + String(act_delay));
   }
 }
 
-int runToPosition() {
+int _runToPosition() {
   int a = 0;
   for (int i = 0; i < NUM_WRIST_; i++) {
     if (sf[i].getIsMoving() == 1) {
-      if (sf[i].run( & t[i]) == 1) {
+      if (sf[i]._run( & t[i]) == 1) {
         a++;
         //Serial.println(a);
       }
@@ -215,17 +239,60 @@ void receiveData(int bytecount) {
   offsetTime =(((int16_t) data[3]) << 8 | data[4]);
   for (int i = 5; i < _DATA_BYTES; i++) {
    percentAngles[i-5] = data[i];
-    Serial.print("Percent ");
-  Serial.println(i-5);
-   Serial.print(" : ");
-  Serial.println(percentAngles[i-5]);
+//    Serial.print("Percent ");
+//  Serial.println(i-5);
+//   Serial.print(" : ");
+//  Serial.println(percentAngles[i-5]);
   }
   is_setup = 1;
-  Serial.print("ISRELATIVE: ");
-  Serial.println(isRelative);
-   Serial.print("TotalTime: ");
-  Serial.println(totalTime);
-   Serial.print("offsetTime: ");
-  Serial.println(offsetTime);
+//  Serial.print("ISRELATIVE: ");
+//  Serial.println(isRelative);
+//   Serial.print("TotalTime: ");
+//  Serial.println(totalTime);
+//   Serial.print("offsetTime: ");
+//  Serial.println(offsetTime);
   
 }
+
+void test(int p_ang) {
+  
+    isRelative = 0;
+  totalTime = 3000;
+  offsetTime = 0;
+   percentAngles[0] = p_ang;
+  is_setup = 1;
+  }
+  
+  
+  
+void test1(int p_ang) {
+      isRelative = 0;
+  totalTime = 1500;
+  offsetTime = 0;
+   percentAngles[1] = p_ang;
+
+  is_setup = 1;
+}
+
+void test2() {
+  
+    isRelative = 0;
+  totalTime = 1500;
+  offsetTime = 0;
+   percentAngles[0] = 25;
+   percentAngles[1] = 100;
+  
+  is_setup = 1;
+  }
+  
+  
+  
+void test3() { 
+    isRelative = 0;
+  totalTime = 1500;
+  offsetTime = 0;
+   percentAngles[0] = 65;
+   percentAngles[1] = 0;
+  
+  is_setup = 1;
+  }
