@@ -314,7 +314,7 @@ void loop()
 //------funzioni per i2c ------
 
 // da sistemare una volta deciso protocollo e correggere bytes di lettura
-#define _DATA_BYTES 10 // Numero di byte che vengono trasferiti via i2c
+#define _DATA_BYTES 11 // Numero di byte che vengono trasferiti via i2c
 
 unsigned int passi_sp1 = 0;
 unsigned int passi_sp2 = 0;
