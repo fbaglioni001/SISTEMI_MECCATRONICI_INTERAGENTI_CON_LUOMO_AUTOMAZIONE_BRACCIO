@@ -73,7 +73,7 @@ void setup() {
 
   Serial.begin(9600);
   //while (!Serial)
-  Wire.begin(42);
+  Wire.begin(43);
   Wire.onReceive(receiveData);
   noInterrupts();
   for (int i = 0; i < NUM_WRIST_; i++) {

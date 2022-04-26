@@ -89,7 +89,7 @@ void setup() {
   Serial.begin(9600);
   //while (!Serial)
   
-  Wire.begin(22); 
+  Wire.begin(42); 
   Wire.onReceive(receiveData);
   noInterrupts();
   pinMode(triggerPin, OUTPUT);

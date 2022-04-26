@@ -39,10 +39,12 @@
 #define fcSpalla2 33
 #define fcGomito 26
 
+#define I2C_DEV_ADDR 44
+
 // define pin enable per comunicazione i2c e definizione dei pin utilizzati per tale comunicazione
 #define triggerPin 32
-// #define sda 21
-// #define scl 22 //guardando dalla porta della
+//#define sda 21
+//#define scl 22 //guardando dalla porta della
 
 Motor spalla1(2500, 10000, 320, pinStepSpalla1, pinDirSpalla1);
 Motor spalla2(2500, 10000, 320, pinStepSpalla2, pinDirSpalla2);
@@ -54,16 +56,17 @@ unsigned int totalTime = 5000;
 int is_setup = 0;
 int isMoving = 0;
 int isRelative = 0;
-int caso = 0;
 int passi_sp1 = 0;
 int passi_sp2 = 0;
 int passi_gomito = 0;
+int caso = 0;
 unsigned int index_;
 unsigned int disp;
 unsigned int passi = 2560 * 2;
 bool move_s1 = false, move_s2 = false, move_g = false;
 
 unsigned int offsetTime = 0;
+void receiveData(int bytecount);
 
 void homing(int sensore, int steps, int directions, bool start_dir, int passi, int vsteps1, int vsteps2, int vsteps3)
 {
@@ -137,9 +140,9 @@ void homing(int sensore, int steps, int directions, bool start_dir, int passi, i
 
 void setup()
 {
-  pinMode(fcSpalla1, INPUT_PULLDOWN);
-  pinMode(fcSpalla2, INPUT_PULLDOWN);
-  pinMode(fcGomito, INPUT_PULLDOWN);
+  pinMode(fcSpalla1, INPUT);
+  pinMode(fcSpalla2, INPUT);
+  pinMode(fcGomito, INPUT);
 
   pinMode(pinEnSpalla1, OUTPUT);
   pinMode(pinEnSpalla2, OUTPUT);
@@ -157,8 +160,8 @@ void setup()
   digitalWrite(pinEnGomito, 0);
   Serial.begin(9600);
   Serial.println("inizializzazione");
-  Wire.begin(62);
   Wire.onReceive(receiveData);
+  Wire.begin((uint8_t)I2C_DEV_ADDR);
   noInterrupts();
 
   // funzioni di homing chiamate per ogni asse del braccio
@@ -281,7 +284,7 @@ void loop()
     digitalWrite(triggerPin, HIGH); // Da questo momento arduino non può rivere comandi via i2c dall'esterno
     isMoving = 1;                   // Trigger di movimentazione avviata alzato
     is_setup = 0;                   // setup movimentazione finito
-    while (millis - t_offset < offsetTime)
+    while (millis() - t_offset < offsetTime)
     {
       //     //Attendo il tempo rimanente
     }
@@ -316,9 +319,7 @@ void loop()
 // da sistemare una volta deciso protocollo e correggere bytes di lettura
 #define _DATA_BYTES 11 // Numero di byte che vengono trasferiti via i2c
 
-unsigned int passi_sp1 = 0;
-unsigned int passi_sp2 = 0;
-unsigned int passi_gomito = 0;
+
 
 void receiveData(int bytecount)
 {
