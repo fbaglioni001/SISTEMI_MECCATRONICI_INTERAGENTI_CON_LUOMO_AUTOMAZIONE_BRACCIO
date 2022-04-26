@@ -4,7 +4,7 @@ from robotic_arm.srv import *
 import Function
 
 
-angle_2_step=[5493.42561,5493.42561,6400]
+angle_2_step=[5493.42561,5493.42561,25600]
 
 
 def angle2step(angles):
