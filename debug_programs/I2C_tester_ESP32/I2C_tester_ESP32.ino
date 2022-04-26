@@ -22,7 +22,7 @@ void setup()
   // put your setup code here, to run once:
   if (micro == MICRO_MANO_I2C)
   {
-    _DATA_BYTES = 10;
+    _DATA_BYTES = 11;
     i2c_address = MICRO_MANO_I2C;
   }
   else if (micro == MICRO_POLSO_I2C)
