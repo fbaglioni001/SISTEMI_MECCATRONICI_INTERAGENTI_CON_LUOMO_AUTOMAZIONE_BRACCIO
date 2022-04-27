@@ -31,5 +31,5 @@ def callback(data):
 GPIO.setmode(GPIO.BOARD)
 rospy.init_node("i2c_server")
 s=rospy.Service('i2c',i2c_srv,callback)
-rospy.loginfo("i2c server is ready")
+rospy.loginfo("i2c_server: i2c server is ready")
 rospy.spin()
