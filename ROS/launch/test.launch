@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="robotic_arm" type="i2c_server.py" name="server_i2c" output="screen">
+    </node>
+    <node pkg="robotic_arm" type="interface_node.py" name="interface" output="screen">
+    </node>
+    <node pkg="robotic_arm" type="test_system.py" name="tester" output="screen">
+    </node>
+</launch>

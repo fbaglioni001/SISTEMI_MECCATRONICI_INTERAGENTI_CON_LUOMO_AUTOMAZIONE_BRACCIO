@@ -1,4 +1,4 @@
-int8[]    data
+uint8[]    data
 int8    length
 uint16    address
 bool    is_question
@@ -8,4 +8,5 @@ uint8    pin
 int8[]    data
 bool    is_ok
 bool    is_working
+bool    is_i2c_available
 
