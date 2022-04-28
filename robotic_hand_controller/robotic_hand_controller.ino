@@ -88,6 +88,8 @@ void setup() {
   
   Serial.begin(9600);
   //while (!Serial)
+  Serial.println("ci sono");
+  Serial.println();
   
   Wire.begin(42); 
   Wire.onReceive(receiveData);
@@ -109,42 +111,61 @@ void setup() {
   }
   delay(500);
   homing();
- interrupts();
+  interrupts();
   digitalWrite(en_comunication, LOW);
+  Serial.println("loop");
 }
 
 void loop() {
 
   //////////////////
-  if(isMoving == 0) {
+  /*if(isMoving == 0) {
   if(test_case) {
     test();
   } else {
     test1();
   }
-  }
+  }*/
   
   if (is_setup == 1) {
     t_offset = millis(); //Viene salvato il tempo assoluto attuale
+
+    Serial.print("isrelative--->");
+    Serial.println(isRelative);
     
     if(isRelative == 0) { //Le movimentazioni possono essere inviate in coordinate realitve o assolute
       for (int i = 0; i < NUM_FINGERS_; i++)
       {
         angles[i] = home_angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]))/100;
-        //Serial.print("ANGOLO:");
-        //Serial.println(angles[i]);
+        Serial.print("dito  ");
+        Serial.print(i);
+        Serial.print(" ->   ");
+        Serial.print(percentAngles[i]);
+        Serial.print("---> ANGOLO:");
+        Serial.println(angles[i]);
       }
     } else {
       for (int i = 0; i < NUM_FINGERS_; i++)
       {
         angles[i] = angles[i] + (long int)((percentAngles[i]*(max_angles[i]-home_angles[i]))/100.0); //Relative
+        Serial.print("dito  ");
+        Serial.print(i);
+        Serial.print(" ->   ");
+        Serial.print(percentAngles[i]);
+        Serial.print("---> ANGOLO:");
+        Serial.println(angles[i]);
       }
+        
     }
-
+    Serial.print("totaltime--->");
+    Serial.println(totalTime);
+    
     setAngles(angles,totalTime); // Settaggio dei parametri di ogni motore in base al moto da eseguire
     digitalWrite(triggerPin, HIGH); //Da questo momento arduino non può rivere comandi via i2c dall'esterno
     isMoving = 1; //Trigger di movimentazione avviata alzato
     is_setup = 0; // setup movimentazione finito
+    Serial.print("ofsettime--->");
+    Serial.println(offsetTime);    
     while(millis -t_offset < offsetTime) {
         //Attendo il tempo rimanente
     }
@@ -210,7 +231,7 @@ int _runToPosition() {
       }
     }
   }
-  if (a == 0) {
+  if (a == 0) { 
     isMoving = 0;
   } else {
     isMoving = 1;
@@ -259,15 +280,15 @@ void receiveData(int bytecount) {
 
 void test() {
   
-    isRelative = 0;
+  isRelative = 0;
   totalTime = 600;
   offsetTime = 0;
   for (int i = 0; i < 5; i++) {
     int p_ang = 10;
-   if(i == 0) {
+    if(i == 0) {
     p_ang = 100 - p_ang;
-   }
-   percentAngles[i] = p_ang;
+    }
+    percentAngles[i] = p_ang;
   }
   is_setup = 1;
   }

@@ -68,8 +68,7 @@ bool move_s1 = false, move_s2 = false, move_g = false;
 unsigned int offsetTime = 0;
 void receiveData(int bytecount);
 
-void homing(int sensore, int steps, int directions, bool start_dir, int passi, int vsteps1, int vsteps2, int vsteps3)
-{
+void homing(int sensore, int steps, int directions, bool start_dir, int passi, int vsteps1, int vsteps2, int vsteps3){
   /*
    * int sensore    -> pin corrispettivo al motore per il quale si desidera fare homing
    * int steps      -> pin per comandare il DVR8825 con i passi da svolgere
@@ -105,7 +104,7 @@ void homing(int sensore, int steps, int directions, bool start_dir, int passi, i
     }
   }
 
-  delay(150);
+  delay(200);
   digitalWrite(directions, !digitalRead(directions));
 
   // mi allontano dal sensore per avere una miglio precisione di posizionamento
@@ -118,7 +117,7 @@ void homing(int sensore, int steps, int directions, bool start_dir, int passi, i
     passi = passi - 1;
   }
   iter = iter - passi;
-  delay(100);
+  delay(200);
   digitalWrite(directions, !digitalRead(directions));
   a = false;
 
@@ -136,10 +135,10 @@ void homing(int sensore, int steps, int directions, bool start_dir, int passi, i
     }
   }
   Serial.println(iter);
+  
 }
 
-void setup()
-{
+void setup(){
   pinMode(fcSpalla1, INPUT);
   pinMode(fcSpalla2, INPUT);
   pinMode(fcGomito, INPUT);
@@ -158,6 +157,7 @@ void setup()
   digitalWrite(pinEnSpalla1, 0);
   digitalWrite(pinEnSpalla2, 0);
   digitalWrite(pinEnGomito, 0);
+  
   Serial.begin(9600);
   Serial.println("inizializzazione");
   Wire.onReceive(receiveData);
@@ -170,7 +170,7 @@ void setup()
   homing(fcGomito, pinStepGomito, pinDirGomito, true, 500, 1, 1, 5);
 
   // posizonamento asse 3 e asse 1 per foming asse 2
-  unsigned int passis = 500;
+  /*unsigned int passis = 500;
   digitalWrite(pinDirGomito, !digitalRead(pinDirGomito));
   while (passis > 0)
   {
@@ -179,12 +179,12 @@ void setup()
     digitalWrite(pinStepGomito, LOW);
     delay(2);
     passis = passis - 1;
-  }
+  }*/
   // homing asse1
   homing(fcSpalla1, pinStepSpalla1, pinDirSpalla1, false, 200, 2, 5, 15);
 
   // posizionamneto per homing asse 3
-  passis = 2400;
+  /*passis = 2400;
   digitalWrite(pinDirSpalla1, !digitalRead(pinDirSpalla1));
   while (passis > 0)
   {
@@ -193,20 +193,11 @@ void setup()
     digitalWrite(pinStepSpalla1, LOW);
     delay(1);
     passis = passis - 1;
-  }
+  }*/
 
-  //  passis = 1800;
-  //  digitalWrite(pinDirSpalla1,!digitalRead(pinDirSpalla1));
-  //  while(passis>0) {
-  //    digitalWrite(pinStepSpalla1, HIGH);
-  //    delay(1);
-  //    digitalWrite(pinStepSpalla1, LOW);
-  //    delay(1);
-  //    passis = passis-1;
-  //  }
-  //
   // homing asse2
   homing(fcSpalla2, pinStepSpalla2, pinDirSpalla2, false, 250, 4, 8, 15);
+  /*
   passis = 700;
   digitalWrite(pinDirSpalla2, !digitalRead(pinDirSpalla2));
   while (passis > 0)
@@ -216,12 +207,9 @@ void setup()
     digitalWrite(pinStepSpalla2, LOW);
     delay(2);
     passis = passis - 1;
-  }
-  //
-  //
-  //  //Wire.begin(22);
-  //  //Wire.onReceive(receiveData);
+  }*/
 }
+
 
 int angle2step(float angle, int axis)
 {
@@ -242,7 +230,6 @@ int angle2step(float angle, int axis)
 
 void loop()
 {
-
   if (is_setup == 1)
   {
     unsigned long int t_offset = millis(); // Viene salvato il tempo assoluto attuale
@@ -274,21 +261,14 @@ void loop()
     spalla1.set_up(passi_sp1, totalTime);
     spalla2.set_up(passi_sp2, totalTime);
     gomito.set_up(passi_gomito, totalTime);
-
-    //} else {
-    // settaggio set up
-    // spalla1.set_up(passi,3);
-    // spalla2.set_up(passi,3);
-    // gomito.set_up(passi,3);
-    //}
     digitalWrite(triggerPin, HIGH); // Da questo momento arduino non può rivere comandi via i2c dall'esterno
-    isMoving = 1;                   // Trigger di movimentazione avviata alzato
     is_setup = 0;                   // setup movimentazione finito
+    
     while (millis() - t_offset < offsetTime)
     {
       //     //Attendo il tempo rimanente
     }
-
+    
     Serial.println("partito");
     Serial.println(millis() / 1000.0);
 
@@ -299,7 +279,8 @@ void loop()
       move_s2 = spalla2.run();
       move_g = gomito.run();
     }
-
+    Serial.println(millis() / 1000.0);
+    Serial.println("finito"); 
     // reset delle variabili del movimento
     move_s1 = false;
     move_s2 = false;
@@ -308,8 +289,7 @@ void loop()
     digitalWrite(triggerPin, LOW);
   }
 
-  Serial.println(millis() / 1000.0);
-  Serial.println("finito");
+  
 }
 
 // funzione per l'homig del braccio

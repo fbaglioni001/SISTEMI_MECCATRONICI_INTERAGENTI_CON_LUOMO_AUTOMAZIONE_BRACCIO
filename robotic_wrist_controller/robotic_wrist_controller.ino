@@ -70,9 +70,8 @@ void setup() {
   pinMode(pin1, OUTPUT);
   pinMode(pin2, OUTPUT);
   digitalWrite(en_comunication, HIGH);
-
   Serial.begin(9600);
-  //while (!Serial)
+  delay(200);
   Wire.begin(43);
   Wire.onReceive(receiveData);
   noInterrupts();
@@ -86,15 +85,13 @@ void setup() {
     for (int i = 0; i < NUM_WRIST_; i++) {
       sf[i].attachServo();
     }
-    homing();
+  homing();
   interrupts();
   digitalWrite(en_comunication, LOW);
 }
 
 void loop() {
-
-  //////////////////
-  
+ 
 //  if(Serial.available() > 4) {
 //   int ang1 = Serial.parseInt();
 //   Serial.println(ang1);
