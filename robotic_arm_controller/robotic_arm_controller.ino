@@ -170,7 +170,7 @@ void setup(){
   homing(fcGomito, pinStepGomito, pinDirGomito, true, 500, 1, 1, 5);
 
   // posizonamento asse 3 e asse 1 per foming asse 2
-  /*unsigned int passis = 500;
+  unsigned int passis = 500;
   digitalWrite(pinDirGomito, !digitalRead(pinDirGomito));
   while (passis > 0)
   {
@@ -179,12 +179,12 @@ void setup(){
     digitalWrite(pinStepGomito, LOW);
     delay(2);
     passis = passis - 1;
-  }*/
+  }
   // homing asse1
   homing(fcSpalla1, pinStepSpalla1, pinDirSpalla1, false, 200, 2, 5, 15);
 
   // posizionamneto per homing asse 3
-  /*passis = 2400;
+  passis = 2400;
   digitalWrite(pinDirSpalla1, !digitalRead(pinDirSpalla1));
   while (passis > 0)
   {
@@ -193,11 +193,11 @@ void setup(){
     digitalWrite(pinStepSpalla1, LOW);
     delay(1);
     passis = passis - 1;
-  }*/
+  }
 
   // homing asse2
   homing(fcSpalla2, pinStepSpalla2, pinDirSpalla2, false, 250, 4, 8, 15);
-  /*
+  
   passis = 700;
   digitalWrite(pinDirSpalla2, !digitalRead(pinDirSpalla2));
   while (passis > 0)
@@ -207,7 +207,7 @@ void setup(){
     digitalWrite(pinStepSpalla2, LOW);
     delay(2);
     passis = passis - 1;
-  }*/
+  }
 }
 
 

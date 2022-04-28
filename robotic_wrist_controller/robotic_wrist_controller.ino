@@ -71,6 +71,8 @@ void setup() {
   pinMode(pin2, OUTPUT);
   digitalWrite(en_comunication, HIGH);
   Serial.begin(9600);
+  while(!Serial);
+  Serial.println("bello");
   delay(200);
   Wire.begin(43);
   Wire.onReceive(receiveData);
@@ -101,13 +103,13 @@ void loop() {
 //    test1(ang2);
 //    }
 
-   if(isMoving == 0) {
+ /*  if(isMoving == 0) {
   if(test_case) {
     test2();
   } else {
     test3();
   }
-  }
+  }*/
   
   if (is_setup == 1) {
     t_offset = millis();
@@ -236,10 +238,10 @@ void receiveData(int bytecount) {
   offsetTime =(((int16_t) data[3]) << 8 | data[4]);
   for (int i = 5; i < _DATA_BYTES; i++) {
    percentAngles[i-5] = data[i];
-//    Serial.print("Percent ");
-//  Serial.println(i-5);
-//   Serial.print(" : ");
-//  Serial.println(percentAngles[i-5]);
+  Serial.print("Percent ");
+  Serial.println(i-5);
+  Serial.print(" : ");
+  Serial.println(percentAngles[i-5]);
   }
   is_setup = 1;
 //  Serial.print("ISRELATIVE: ");
