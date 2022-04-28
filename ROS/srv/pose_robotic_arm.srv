@@ -1,4 +1,4 @@
-int8[]    hand_angle
+uint8[]    hand_angle
 int16[]    wrist_angle
 int16[]    shoulder_angle
 float32[]    hand_time

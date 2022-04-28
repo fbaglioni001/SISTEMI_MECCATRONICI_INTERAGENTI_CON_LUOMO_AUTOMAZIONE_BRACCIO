@@ -20,7 +20,7 @@ def callback(data):
             bus.i2c_rdwr(msg)
         except:
             res.is_i2c_available=False
-            resp.is_ok=False
+            res.is_ok=False
             return res
     if data.is_question:
         msg = i2c_msg.read(data.address,data.question_length)

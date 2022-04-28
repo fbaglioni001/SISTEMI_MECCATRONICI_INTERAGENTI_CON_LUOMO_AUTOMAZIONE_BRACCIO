@@ -3,6 +3,7 @@ import rospy
 from robotic_arm.srv import *
 import Function
 import math as m
+import time
 
 
 angle_2_step=[5493.42561,5493.42561,25600]
@@ -61,6 +62,7 @@ def callback(msg):
         msg_request.pin=addr_pin[1][0]
         msg_request.is_question=False
         resp=i2c(msg_request)
+        time.sleep(1)
     if not resp.is_ok:
         reply.is_ok=False
         if resp.is_i2c_available==False:
@@ -76,13 +78,13 @@ def callback(msg):
         d=[int(msg.is_rel)]
         d=mergeList(d,tm)
         d=mergeList(d,ang)
-        print(d)
         msg_request.data=d
         msg_request.length=len(d)
         msg_request.address=addr_pin[0][1]
         msg_request.pin=addr_pin[1][1]
         msg_request.is_question=False
         resp=i2c(msg_request)
+        time.sleep(1)
     if not resp.is_ok:
         reply.is_ok=False
         if resp.is_i2c_available==False:
@@ -100,13 +102,13 @@ def callback(msg):
         d=[int(msg.is_rel)]
         d=mergeList(d,tm)
         d=mergeList(d,ang)
-        print(d)
         msg_request.data=d
         msg_request.length=len(d)
         msg_request.address=addr_pin[0][2]
         msg_request.pin=addr_pin[1][2]
         msg_request.is_question=False
         resp=i2c(msg_request)
+        time.sleep(1)
     if not resp.is_ok:
         reply.is_ok=False
         if resp.is_i2c_available==False:
