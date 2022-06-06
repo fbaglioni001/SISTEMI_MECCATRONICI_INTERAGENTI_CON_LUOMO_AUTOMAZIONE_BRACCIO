@@ -88,10 +88,15 @@ void setup() {
   
   Serial.begin(9600);
   //while (!Serial)
+<<<<<<< Updated upstream
   Serial.println("ci sono");
   Serial.println();
   
   Wire.begin(42); 
+=======
+  delay(2000);
+  Wire.begin(22); 
+>>>>>>> Stashed changes
   Wire.onReceive(receiveData);
   noInterrupts();
   pinMode(triggerPin, OUTPUT);
@@ -119,7 +124,11 @@ void setup() {
 void loop() {
 
   //////////////////
+<<<<<<< Updated upstream
   /*if(isMoving == 0) {
+=======
+ /* if(isMoving == 0) {
+>>>>>>> Stashed changes
   if(test_case) {
     test();
   } else {
@@ -137,11 +146,15 @@ void loop() {
       for (int i = 0; i < NUM_FINGERS_; i++)
       {
         angles[i] = home_angles[i] + (percentAngles[i]*(max_angles[i]-home_angles[i]))/100;
+<<<<<<< Updated upstream
         Serial.print("dito  ");
         Serial.print(i);
         Serial.print(" ->   ");
         Serial.print(percentAngles[i]);
         Serial.print("---> ANGOLO:");
+=======
+        Serial.print("ANGOLO:");
+>>>>>>> Stashed changes
         Serial.println(angles[i]);
       }
     } else {
@@ -175,7 +188,7 @@ void loop() {
   }
   if (isMoving == 1) {
     if (_runToPosition() == 0) { // Il movimento ora viene eseguito con i tempi preimpostati, quando il movimento finisce si verifica runToPosition() = 0
-      //Serial.println("Movimento finito");
+      Serial.println("Movimento finito");
       digitalWrite(triggerPin,LOW); //Il movimento è finito e arduino può ricevere comandi via i2c dall'esterno
       test_case = !test_case;
     }

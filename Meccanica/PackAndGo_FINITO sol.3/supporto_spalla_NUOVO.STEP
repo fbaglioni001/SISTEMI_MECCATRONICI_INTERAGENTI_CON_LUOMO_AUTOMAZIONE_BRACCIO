@@ -1,0 +1,28 @@
+ISO-10303-21;
+HEADER;
+FILE_DESCRIPTION (( 'STEP AP214' ),
+    '1' );
+FILE_NAME ('supporto_spalla_NUOVO.STEP',
+    '2022-03-24T14:11:29',
+    ( '' ),
+    ( '' ),
+    'SwSTEP 2.0',
+    'SolidWorks 2021',
+    '' );
+FILE_SCHEMA (( 'AUTOMOTIVE_DESIGN' ));
+ENDSEC;
+
+DATA;
+#1 = APPLICATION_CONTEXT ( 'automotive_design' ) ;
+#2 = PRODUCT_DEFINITION_SHAPE ( 'NONE', 'NONE',  #11 ) ;
+#3 = PRODUCT_DEFINITION_CONTEXT ( 'detailed design', #5, 'design' ) ;
+#4 = PRODUCT_DEFINITION_FORMATION_WITH_SPECIFIED_SOURCE ( 'TUTTO', '', #7, .NOT_KNOWN. ) ;
+#5 = APPLICATION_CONTEXT ( 'automotive_design' ) ;
+#6 = PRODUCT_RELATED_PRODUCT_CATEGORY ( 'part', '', ( #7 ) ) ;
+#7 = PRODUCT ( 'supporto_spalla_NUOVO', 'supporto_spalla_NUOVO', '', ( #9 ) ) ;
+#8 = APPLICATION_PROTOCOL_DEFINITION ( 'draft international standard', 'automotive_design', 1998, #1 ) ;
+#9 = PRODUCT_CONTEXT ( 'NONE', #1, 'mechanical' ) ;
+#10 = APPLICATION_PROTOCOL_DEFINITION ( 'draft international standard', 'automotive_design', 1998, #5 ) ;
+#11 = PRODUCT_DEFINITION ( 'NON CONOSCIUTO', '', #4, #3 ) ;
+ENDSEC;
+END-ISO-10303-21;

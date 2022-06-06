@@ -263,7 +263,10 @@ void loop()
     gomito.set_up(passi_gomito, totalTime);
     digitalWrite(triggerPin, HIGH); // Da questo momento arduino non può rivere comandi via i2c dall'esterno
     is_setup = 0;                   // setup movimentazione finito
+<<<<<<< Updated upstream
     
+=======
+>>>>>>> Stashed changes
     while (millis() - t_offset < offsetTime)
     {
       //     //Attendo il tempo rimanente
